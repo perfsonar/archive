@@ -1,0 +1,13 @@
+version: '3.7'
+services:
+  elasticsearch:
+      image: amazon/opendistro-for-elasticsearch:1.13.1
+      env_file: .env
+      ports:
+        - "9200:9200"
+        - "9300:9300"
+  kibana:
+      image: amazon/opendistro-for-elasticsearch-kibana:1.13.1
+      env_file: .env
+      ports:
+        - "5601:5601"
