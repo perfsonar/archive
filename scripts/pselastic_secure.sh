@@ -3,15 +3,15 @@
 SCRIPT_DIR=$(dirname $0)
 APP_DIR="$SCRIPT_DIR/../.."
 SETUP_DIR="${APP_DIR}/pselastic_setup"
-PASSWORD_DIR=/etc/perfsonar/elastic
+PASSWORD_DIR=/etc/perfsonar/archive
 PASSWORD_FILE=${PASSWORD_DIR}/auth_setup.out
 ELASTIC_LOGIN_FILE=${PASSWORD_DIR}/elastic_login
 LOGSTASH_USER=pscheduler_logstash
 LOGSTASH_PASSWORD_FILE=${PASSWORD_DIR}/${LOGSTASH_USER}
-ENV_FILE="${SCRIPT_DIR}/../.env"
 ELASTIC_CONFIG_DIR=/etc/elasticsearch
 ELASTIC_CONFIG_FILE=${ELASTIC_CONFIG_DIR}/elasticsearch.yml
 ELASTIC_CERT_FILE=${ELASTIC_CONFIG_DIR}/elastic-cert.p12
+
 #Enable security
 echo "[Enable elasticsearch security]"
 egrep -q "xpack.security.enabled:.*true" $ELASTIC_CONFIG_FILE

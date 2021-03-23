@@ -25,8 +25,6 @@ install:
 	mkdir -p ${CONFIGPATH}
 	cp -r scripts/* ${ROOTPATH}/scripts/
 	cp -r pselastic_setup/* ${ROOTPATH}/pselastic_setup
-	cp -r scripts/* ${ROOTPATH}/scripts
-	cp -r pipeline_etc/* ${CONFIGPATH}
 
 # Some of the jobs require the containers to be down. Detects if we have 
 # already generated a docker-compose.yml and stops containers accordingly

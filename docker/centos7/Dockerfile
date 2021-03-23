@@ -17,7 +17,7 @@ COPY ./docker/centos7/opendistro.repo /etc/yum.repos.d/opendistro.repo
 
 #Install build environment dependencies
 RUN yum update -y && \
-    yum install -y epel-release make rpmbuild rpmdevtools && \
+    yum install -y epel-release make rpmbuild rpmdevtools git && \
     yum clean all && \
     mkdir -p ~/rpmbuild/{BUILD,RPMS,SOURCES,SPECS,SRPMS} && \
     echo '%_topdir %(echo $HOME)/rpmbuild' > ~/.rpmmacros
