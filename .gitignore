@@ -2,6 +2,7 @@
 .*.swn
 .*.swo
 .*.swp
+*.pyc
 .vscode/
 .env
 artifacts/
