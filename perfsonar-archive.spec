@@ -41,6 +41,11 @@ make ROOTPATH=%{buildroot}/%{archive_base} CONFIGPATH=%{buildroot}/%{config_base
 rm -rf %{buildroot}
 
 %post
+#create config directory
+mkdir -p %{config_base}
+
+#TODO: Run setup scripts
+
 #Restart/enable elasticsearch and kibana
 %systemd_post elasticsearch.service
 %systemd_post kibana.service

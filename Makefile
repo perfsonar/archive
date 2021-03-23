@@ -10,7 +10,7 @@ RELEASE=${PERFSONAR_AUTO_RELNUM}
 DC_CMD_BASE=docker-compose
 DC_CMD=${DC_CMD_BASE} -p ${PACKAGE}
 
-centos7: clean release build
+centos7:
 	mkdir -p ./artifacts/centos7
 	${DC_CMD} -f docker-compose.qa.yml up --build --no-start centos7
 	docker cp ${PACKAGE}_centos7_1:/root/rpmbuild/SRPMS ./artifacts/centos7/srpms

@@ -33,6 +33,12 @@ RUN cd /app && \
     rpmbuild -ba perfsonar-archive.spec && \
     yum install -y ~/rpmbuild/RPMS/noarch/*.rpm
 
+#This is docker specific stuff that is only needed here
+RUN mkdir -p /var/lib/perfsonar/archive/tmp && \
+    echo "" >> /etc/elasticsearch/jvm.options && \
+    echo "-Djava.io.tmpdir=/var/lib/perfsonar/archive/tmp" >> /etc/elasticsearch/jvm.options && \
+    chown -R elasticsearch:elasticsearch /var/lib/perfsonar/archive
+
 #shared volumes
 VOLUME /sys/fs/cgroup
 
