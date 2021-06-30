@@ -31,7 +31,7 @@ sed -i '/^  - CN=admin.*/d' $ELASTIC_CONFIG_FILE
 sed -i '/^opendistro_security.nodes_dn.*/d' $ELASTIC_CONFIG_FILE
 sed -i '/^  - CN=localhost.*/d' $ELASTIC_CONFIG_FILE
 # Delete demo certificate files
-rm ${ELASTIC_CONFIG_DIR}/*.pem
+rm -f ${ELASTIC_CONFIG_DIR}/*.pem
 # Generate Opendistro Certificates
 # Root CA
 openssl genrsa -out ${ELASTIC_CONFIG_DIR}/root-ca-key.pem 2048
@@ -47,7 +47,7 @@ openssl pkcs8 -inform PEM -outform PEM -in ${ELASTIC_CONFIG_DIR}/node-key-temp.p
 openssl req -new -key ${ELASTIC_CONFIG_DIR}/node-key.pem -subj "/CN=localhost/OU=node/O=node/L=test/C=br" -out ${ELASTIC_CONFIG_DIR}/node.csr
 openssl x509 -req -in ${ELASTIC_CONFIG_DIR}/node.csr -CA ${ELASTIC_CONFIG_DIR}/root-ca.pem -CAkey ${ELASTIC_CONFIG_DIR}/root-ca-key.pem -CAcreateserial -sha256 -out ${ELASTIC_CONFIG_DIR}/node.pem -days 180
 # Cleanup
-rm ${ELASTIC_CONFIG_DIR}/admin-key-temp.pem ${ELASTIC_CONFIG_DIR}/admin.csr ${ELASTIC_CONFIG_DIR}/node-key-temp.pem ${ELASTIC_CONFIG_DIR}/node.csr
+rm -f ${ELASTIC_CONFIG_DIR}/admin-key-temp.pem ${ELASTIC_CONFIG_DIR}/admin.csr ${ELASTIC_CONFIG_DIR}/node-key-temp.pem ${ELASTIC_CONFIG_DIR}/node.csr
 # Add to Java cacerts
 keytool -delete -alias node -keystore $JAVA_HOME/lib/security/cacerts -storepass changeit
 openssl x509 -outform der -in ${ELASTIC_CONFIG_DIR}/node.pem -out ${ELASTIC_CONFIG_DIR}/node.der
@@ -200,3 +200,7 @@ echo "[DONE]"
 echo ""
 
 bash ${OPENDISTRO_SECURITY_PLUGIN}/tools/securityadmin.sh -cd ${OPENDISTRO_SECURITY_PLUGIN}/securityconfig -icl -nhnv -cacert ${ELASTIC_CONFIG_DIR}/root-ca.pem -cert ${ELASTIC_CONFIG_DIR}/admin.pem -key ${ELASTIC_CONFIG_DIR}/admin-key.pem
+
+# 5. Configure Kibana for Opendistro
+KIBANA_PASS=$(grep "kibanaserver " /etc/perfsonar/elastic/auth_setup.out | head -n 1 | sed 's/^kibanaserver //')
+sed -i "s/elasticsearch.password: kibanaserver/elasticsearch.password: ${KIBANA_PASS}/g" /etc/kibana/kibana.yml
