@@ -20,6 +20,8 @@ BuildRoot:		%{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 BuildArch:		noarch
 Requires:		opendistroforelasticsearch
 Requires:       opendistroforelasticsearch-kibana
+Requires:       java-11-openjdk
+Requires:       openssl
 #Requires:       perfsonar-logstash
 
 %description
@@ -44,7 +46,7 @@ rm -rf %{buildroot}
 #create config directory
 mkdir -p %{config_base}
 
-#TODO: Run setup scripts
+%{scripts_base}/pselastic_secure.sh
 
 #Restart/enable elasticsearch and kibana
 %systemd_post elasticsearch.service
