@@ -46,6 +46,7 @@ rm -rf %{buildroot}
 #create config directory
 mkdir -p %{config_base}
 
+export JAVA_HOME=/usr/share/elasticsearch/jdk
 %{scripts_base}/pselastic_secure.sh
 
 #Restart/enable elasticsearch and kibana
