@@ -49,9 +49,8 @@ openssl x509 -req -in ${ELASTIC_CONFIG_DIR}/node.csr -CA ${ELASTIC_CONFIG_DIR}/r
 # Cleanup
 rm -f ${ELASTIC_CONFIG_DIR}/admin-key-temp.pem ${ELASTIC_CONFIG_DIR}/admin.csr ${ELASTIC_CONFIG_DIR}/node-key-temp.pem ${ELASTIC_CONFIG_DIR}/node.csr
 # Add to Java cacerts
-keytool -delete -alias node -keystore $JAVA_HOME/lib/security/cacerts -storepass changeit
 openssl x509 -outform der -in ${ELASTIC_CONFIG_DIR}/node.pem -out ${ELASTIC_CONFIG_DIR}/node.der
-keytool -import -alias node -keystore $JAVA_HOME/lib/security/cacerts -file ${ELASTIC_CONFIG_DIR}/node.der -storepass changeit -noprompt
+keytool -import -alias node -keystore /etc/pki/java/cacerts -file ${ELASTIC_CONFIG_DIR}/node.der -storepass changeit -noprompt
 # Apply new settings
 echo "opendistro_security.ssl.transport.pemcert_filepath: node.pem" | tee -a $ELASTIC_CONFIG_FILE > /dev/null
 echo "opendistro_security.ssl.transport.pemkey_filepath: node-key.pem" | tee -a $ELASTIC_CONFIG_FILE > /dev/null
