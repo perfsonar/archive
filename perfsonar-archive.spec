@@ -22,7 +22,7 @@ Requires:		opendistroforelasticsearch
 Requires:       opendistroforelasticsearch-kibana
 Requires:       java-11-openjdk
 Requires:       openssl
-#Requires:       perfsonar-logstash
+Requires:       perfsonar-logstash
 
 %description
 A package that installs the perfSONAR Archive based on Logstash and Opendistro for Elasticsearch.
