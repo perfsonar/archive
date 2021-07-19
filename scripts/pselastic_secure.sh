@@ -15,8 +15,6 @@ ELASTIC_CONFIG_FILE=${ELASTIC_CONFIG_DIR}/elasticsearch.yml
 OPENDISTRO_SECURITY_PLUGIN=/usr/share/elasticsearch/plugins/opendistro_security
 OPENDISTRO_SECURITY_FILES=${OPENDISTRO_SECURITY_PLUGIN}/securityconfig
 
-systemctl start elasticsearch
-
 # Certificates configurations
 # Clear out any config old settings
 sed -i '/^opendistro_security.ssl.transport.pemcert_filepath.*/d' $ELASTIC_CONFIG_FILE
@@ -164,8 +162,7 @@ if [ $? -eq 0 ]; then
     echo "User already created"
 else
     # Generate and save logstash password
-	# PASS=$(tr -dc A-Za-z0-9 </dev/urandom | head -c 20)
-    PASS="pscheduler_logstash"
+	PASS=$(tr -dc A-Za-z0-9 </dev/urandom | head -c 20)
     HASHED_PASS=$(${OPENDISTRO_SECURITY_PLUGIN}/tools/hash.sh -p $PASS)
 	echo "$LOGSTASH_USER $PASS" | tee -a $PASSWORD_FILE  > /dev/null
 	# Add user to internal_users
