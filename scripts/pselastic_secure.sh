@@ -220,9 +220,20 @@ fi
 echo "[DONE]"
 echo ""
 
-# 4. Configure Kibana for Opendistro
+# 4. Configure kibana to use new kibanaserver password
+echo "[Configure kibana]"
 KIBANA_PASS=$(grep "kibanaserver " /etc/perfsonar/elastic/auth_setup.out | head -n 1 | sed 's/^kibanaserver //')
 sed -i "s/elasticsearch.password: kibanaserver/elasticsearch.password: ${KIBANA_PASS}/g" /etc/kibana/kibana.yml
+echo "[DONE]"
+echo ""
+
+# 5. Configure logstash to use pscheduler_logstash user/password
+echo "[Configure logstash]"
+LOGSTASH_PASS=$(grep "pscheduler_logstash " $PASSWORD_FILE | head -n 1 | sed 's/^pscheduler_logstash //')
+echo "LOGSTASH_ELASTIC_USER=${LOGSTASH_USER}" | tee -a /etc/sysconfig/logstash > /dev/null
+sed -i 's/elastic_output_password=pscheduler_logstash/elastic_output_password='$LOGSTASH_PASS'/g' /etc/sysconfig/logstash
+echo "[DONE]"
+echo ""
 
 # Apply Changes
 bash ${OPENDISTRO_SECURITY_PLUGIN}/tools/securityadmin.sh -cd ${OPENDISTRO_SECURITY_PLUGIN}/securityconfig -icl -nhnv -cacert ${ELASTIC_CONFIG_DIR}/root-ca.pem -cert ${ELASTIC_CONFIG_DIR}/admin.pem -key ${ELASTIC_CONFIG_DIR}/admin-key.pem

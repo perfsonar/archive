@@ -49,15 +49,18 @@ mkdir -p %{config_base}
 export JAVA_HOME=/usr/share/elasticsearch/jdk
 %{scripts_base}/pselastic_secure.sh
 
-#Restart/enable elasticsearch and kibana
+#Restart/enable elasticsearch, kibana and logstash
 %systemd_post elasticsearch.service
 %systemd_post kibana.service
+%systemd_post logstash.service
 if [ "$1" = "1" ]; then
     #if new install, then enable
     systemctl enable elasticsearch.service
     systemctl start elasticsearch.service
     systemctl enable kibana.service
     systemctl start kibana.service
+    systemctl enable logstash.service
+    systemctl start logstash.service
 fi
 
 %preun
