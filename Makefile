@@ -20,10 +20,10 @@ dist:
 	git archive --format=tar --prefix=$(PACKAGE)-$(VERSION).$(RELEASE)/ HEAD | gzip >$(PACKAGE)-$(VERSION).$(RELEASE).tar.gz
 
 install:
-	mkdir -p ${ROOTPATH}/scripts
+	mkdir -p ${ROOTPATH}/perfsonar-scripts
 	mkdir -p ${ROOTPATH}/pselastic_setup
 	mkdir -p ${CONFIGPATH}
-	cp -r scripts/* ${ROOTPATH}/scripts/
+	cp -r perfsonar-scripts/* ${ROOTPATH}/perfsonar-scripts/
 	cp -r pselastic_setup/* ${ROOTPATH}/pselastic_setup
 
 # Some of the jobs require the containers to be down. Detects if we have 

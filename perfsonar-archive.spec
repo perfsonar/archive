@@ -1,6 +1,6 @@
 %define install_base        /usr/lib/perfsonar
 %define archive_base        %{install_base}/archive
-%define scripts_base        %{archive_base}/scripts
+%define scripts_base        %{archive_base}/perfsonar-scripts
 %define setup_base          %{archive_base}/pselastic_setup
 %define config_base         /etc/perfsonar/archive
 
