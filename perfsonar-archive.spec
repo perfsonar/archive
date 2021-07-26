@@ -36,7 +36,7 @@ A package that installs the perfSONAR Archive based on Logstash and Opendistro f
 %build
 
 %install
-make ROOTPATH=%{buildroot}/%{archive_base} CONFIGPATH=%{buildroot}/%{config_base} install
+make PERFSONAR-ROOTPATH=%{buildroot}/%{archive_base} PERFSONAR-CONFIGPATH=%{buildroot}/%{config_base} install
 
 %clean
 rm -rf %{buildroot}
