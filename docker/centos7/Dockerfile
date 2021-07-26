@@ -34,9 +34,15 @@ COPY . /app
 #Build RPM
 RUN cd /app && \
     make dist && \
+    # elasticsearch and logstash
     mv perfsonar-archive-*.tar.gz ~/rpmbuild/SOURCES/ && \
     rpmbuild -bs perfsonar-archive.spec && \
     rpmbuild -ba perfsonar-archive.spec && \
+    # kibana
+    mv kibana-archive-*.tar.gz ~/rpmbuild/SOURCES/ && \
+    rpmbuild -bs kibana-archive.spec && \
+    rpmbuild -ba kibana-archive.spec && \
+    # install both
     yum install -y ~/rpmbuild/RPMS/noarch/*.rpm
 
 #This is elasticsearch docker specific stuff that is only needed here
