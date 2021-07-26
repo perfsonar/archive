@@ -19,10 +19,9 @@ Source0:		perfsonar-archive-%{version}.%{perfsonar_auto_relnum}.tar.gz
 BuildRoot:		%{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 BuildArch:		noarch
 Requires:		opendistroforelasticsearch
-Requires:       opendistroforelasticsearch-kibana
-Requires:       java-11-openjdk
-Requires:       openssl
-Requires:       perfsonar-logstash
+Requires:       	java-11-openjdk
+Requires:       	openssl
+Requires:       	perfsonar-logstash
 
 %description
 A package that installs the perfSONAR Archive based on Logstash and Opendistro for Elasticsearch.
@@ -49,27 +48,22 @@ mkdir -p %{config_base}
 export JAVA_HOME=/usr/share/elasticsearch/jdk
 %{scripts_base}/pselastic_secure.sh
 
-#Restart/enable elasticsearch, kibana and logstash
+#Restart/enable elasticsearch and logstash
 %systemd_post elasticsearch.service
-%systemd_post kibana.service
 %systemd_post logstash.service
 if [ "$1" = "1" ]; then
     #if new install, then enable
     systemctl enable elasticsearch.service
     systemctl start elasticsearch.service
-    systemctl enable kibana.service
-    systemctl start kibana.service
     systemctl enable logstash.service
     systemctl start logstash.service
 fi
 
 %preun
 %systemd_preun elasticsearch.service
-%systemctl start kibana.service
 
 %postun
 %systemd_postun_with_restart elasticsearch.service
-%systemctl start kibana.service
 
 %files
 %defattr(0644,perfsonar,perfsonar,0755)
