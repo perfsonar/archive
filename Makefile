@@ -16,12 +16,8 @@ DC_CMD=${DC_CMD_BASE} -p ${PERFSONAR-PACKAGE}
 centos7:
 	mkdir -p ./artifacts/centos7
 	${DC_CMD} -f docker-compose.qa.yml up --build --no-start centos7
-	# elasticsearch and logstash
 	docker cp ${PERFSONAR-PACKAGE}_centos7_1:/root/rpmbuild/SRPMS ./artifacts/centos7/srpms
 	docker cp ${PERFSONAR-PACKAGE}_centos7_1:/root/rpmbuild/RPMS/noarch ./artifacts/centos7/rpms
-	# kibana
-	docker cp ${KIBANA-PACKAGE}_centos7_1:/root/rpmbuild/SRPMS ./artifacts/centos7/srpms
-	docker cp ${KIBANA-PACKAGE}_centos7_1:/root/rpmbuild/RPMS/noarch ./artifacts/centos7/rpms
 
 dist:
 	# elasticsearch and logstash
