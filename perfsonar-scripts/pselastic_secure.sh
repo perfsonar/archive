@@ -102,10 +102,10 @@ grep "# Pscheduler Logstash" $OPENDISTRO_SECURITY_FILES/internal_users.yml
 if [ $? -eq 0 ]; then
     echo "User already created"
 else
-    # pscheduler_logstash 
-	PASS=$(tr -dc A-Za-z0-9 </dev/urandom | head -c 20)
+    # pscheduler_logstash
+    PASS=$(tr -dc A-Za-z0-9 </dev/urandom | head -c 20)
     HASHED_PASS=$(${OPENDISTRO_SECURITY_PLUGIN}/tools/hash.sh -p $PASS)
-	echo "$LOGSTASH_USER $PASS" | tee -a $PASSWORD_FILE  > /dev/null
+    echo "$LOGSTASH_USER $PASS" | tee -a $PASSWORD_FILE  > /dev/null
     echo | tee -a $OPENDISTRO_SECURITY_FILES/internal_users.yml > /dev/null
     echo | tee -a $OPENDISTRO_SECURITY_FILES/internal_users.yml > /dev/null
     echo 'pscheduler_logstash:' | tee -a $OPENDISTRO_SECURITY_FILES/internal_users.yml > /dev/null
@@ -113,20 +113,20 @@ else
     echo '  reserved: true' | tee -a $OPENDISTRO_SECURITY_FILES/internal_users.yml > /dev/null
     echo '  description: "pscheduler logstash user"' | tee -a $OPENDISTRO_SECURITY_FILES/internal_users.yml > /dev/null
 
-	# pscheduler_reader
-	PASS=$(tr -dc A-Za-z0-9 </dev/urandom | head -c 20)
+    # pscheduler_reader
+    PASS=$(tr -dc A-Za-z0-9 </dev/urandom | head -c 20)
     HASHED_PASS=$(${OPENDISTRO_SECURITY_PLUGIN}/tools/hash.sh -p $PASS)
-	echo "pscheduler_reader $PASS" | tee -a $PASSWORD_FILE  > /dev/null
+    echo "pscheduler_reader $PASS" | tee -a $PASSWORD_FILE  > /dev/null
     echo | tee -a $OPENDISTRO_SECURITY_FILES/internal_users.yml > /dev/null
     echo 'pscheduler_reader:' | tee -a $OPENDISTRO_SECURITY_FILES/internal_users.yml > /dev/null
     echo '  hash: "'$HASHED_PASS'"' | tee -a $OPENDISTRO_SECURITY_FILES/internal_users.yml > /dev/null
     echo '  reserved: true' | tee -a $OPENDISTRO_SECURITY_FILES/internal_users.yml > /dev/null
     echo '  description: "pscheduler reader user"' | tee -a $OPENDISTRO_SECURITY_FILES/internal_users.yml > /dev/null
  
-	# pscheduler_writer 
-	PASS=$(tr -dc A-Za-z0-9 </dev/urandom | head -c 20)
+    # pscheduler_writer
+    PASS=$(tr -dc A-Za-z0-9 </dev/urandom | head -c 20)
     HASHED_PASS=$(${OPENDISTRO_SECURITY_PLUGIN}/tools/hash.sh -p $PASS)
-	echo "pscheduler_writer $PASS" | tee -a $PASSWORD_FILE  > /dev/null
+    echo "pscheduler_writer $PASS" | tee -a $PASSWORD_FILE  > /dev/null
     echo | tee -a $OPENDISTRO_SECURITY_FILES/internal_users.yml > /dev/null
     echo 'pscheduler_writer:' | tee -a $OPENDISTRO_SECURITY_FILES/internal_users.yml > /dev/null
     echo '  hash: "'$HASHED_PASS'"' | tee -a $OPENDISTRO_SECURITY_FILES/internal_users.yml > /dev/null
@@ -145,7 +145,7 @@ grep "# Pscheduler Logstash" $OPENDISTRO_SECURITY_FILES/roles.yml
 if [ $? -eq 0 ]; then
     echo "Role already created"
 else
-	# pscheduler_logstash
+    # pscheduler_logstash
     echo | tee -a $OPENDISTRO_SECURITY_FILES/roles.yml > /dev/null
     echo | tee -a $OPENDISTRO_SECURITY_FILES/roles.yml > /dev/null
     echo "pscheduler_logstash:" | tee -a $OPENDISTRO_SECURITY_FILES/roles.yml > /dev/null
@@ -164,7 +164,7 @@ else
     echo "      - 'indices:admin/template/get'" | tee -a $OPENDISTRO_SECURITY_FILES/roles.yml > /dev/null
     echo "      - 'indices:admin/template/put'" | tee -a $OPENDISTRO_SECURITY_FILES/roles.yml > /dev/null
 
-	# pscheduler_reader => read-only access to the pscheduler indices
+    # pscheduler_reader => read-only access to the pscheduler indices
     echo | tee -a $OPENDISTRO_SECURITY_FILES/roles.yml > /dev/null
     echo "pscheduler_reader:" | tee -a $OPENDISTRO_SECURITY_FILES/roles.yml > /dev/null
     echo "  reserved: true" | tee -a $OPENDISTRO_SECURITY_FILES/roles.yml > /dev/null
@@ -174,7 +174,7 @@ else
     echo "      allowed_actions:" | tee -a $OPENDISTRO_SECURITY_FILES/roles.yml > /dev/null
     echo "      - 'read'" | tee -a $OPENDISTRO_SECURITY_FILES/roles.yml > /dev/null
 
-	# pscheduler_writer => write-only access to the pscheduler indices
+    # pscheduler_writer => write-only access to the pscheduler indices
     echo | tee -a $OPENDISTRO_SECURITY_FILES/roles.yml > /dev/null
     echo "pscheduler_writer:" | tee -a $OPENDISTRO_SECURITY_FILES/roles.yml > /dev/null
     echo "  reserved: true" | tee -a $OPENDISTRO_SECURITY_FILES/roles.yml > /dev/null
@@ -193,14 +193,14 @@ grep "# Pscheduler Logstash" $OPENDISTRO_SECURITY_FILES/roles_mapping.yml
 if [ $? -eq 0 ]; then
     echo "Map already created"
 else
-	# pscheduler_logstash 
+    # pscheduler_logstash
     echo | tee -a $OPENDISTRO_SECURITY_FILES/roles_mapping.yml > /dev/null
     echo 'pscheduler_logstash:' | tee -a $OPENDISTRO_SECURITY_FILES/roles_mapping.yml > /dev/null
     echo '  reserved: true' | tee -a $OPENDISTRO_SECURITY_FILES/roles_mapping.yml > /dev/null
     echo '  users:' | tee -a $OPENDISTRO_SECURITY_FILES/roles_mapping.yml > /dev/null
     echo '  - "pscheduler_logstash"' | tee -a $OPENDISTRO_SECURITY_FILES/roles_mapping.yml > /dev/null
 
-	# pscheduler_reader
+    # pscheduler_reader
     echo | tee -a $OPENDISTRO_SECURITY_FILES/roles_mapping.yml > /dev/null
     echo 'pscheduler_reader:' | tee -a $OPENDISTRO_SECURITY_FILES/roles_mapping.yml > /dev/null
     echo '  reserved: true' | tee -a $OPENDISTRO_SECURITY_FILES/roles_mapping.yml > /dev/null
@@ -210,7 +210,7 @@ else
     echo '  backend_roles:' | tee -a $OPENDISTRO_SECURITY_FILES/roles_mapping.yml > /dev/null
     echo '  - "opendistro_security_anonymous_backendrole"' | tee -a $OPENDISTRO_SECURITY_FILES/roles_mapping.yml > /dev/null
 
-	# pscheduler_writer
+    # pscheduler_writer
     echo | tee -a $OPENDISTRO_SECURITY_FILES/roles_mapping.yml > /dev/null
     echo 'pscheduler_writer:' | tee -a $OPENDISTRO_SECURITY_FILES/roles_mapping.yml > /dev/null
     echo '  reserved: true' | tee -a $OPENDISTRO_SECURITY_FILES/roles_mapping.yml > /dev/null
@@ -220,7 +220,7 @@ fi
 echo "[DONE]"
 echo ""
 
-# 4. Configure logstash to use pscheduler_logstash user/password
+# 5. Configure logstash to use pscheduler_logstash user/password
 echo "[Configure logstash]"
 LOGSTASH_PASS=$(grep "pscheduler_logstash " $PASSWORD_FILE | head -n 1 | sed 's/^pscheduler_logstash //')
 echo "LOGSTASH_ELASTIC_USER=${LOGSTASH_USER}" | tee -a /etc/sysconfig/logstash > /dev/null
@@ -230,3 +230,24 @@ echo ""
 
 # Apply Changes
 bash ${OPENDISTRO_SECURITY_PLUGIN}/tools/securityadmin.sh -cd ${OPENDISTRO_SECURITY_PLUGIN}/securityconfig -icl -nhnv -cacert ${ELASTIC_CONFIG_DIR}/root-ca.pem -cert ${ELASTIC_CONFIG_DIR}/admin.pem -key ${ELASTIC_CONFIG_DIR}/admin-key.pem
+
+# 6. Configure index state management (ISM) policy for pscheduler indices
+echo "[Configure policy]"
+echo ${ADMIN_PASS}
+echo "[Trying to start elastic]"
+echo "[Status 1]"
+systemctl status elasticsearch
+echo "[Start]"
+systemctl start elasticsearch
+echo "[Sleeping]"
+sleep 100
+echo "[Status 2]"
+systemctl status elasticsearch
+echo "[Trying to create policy]"
+# Create policy
+curl -v -k -u admin:${ADMIN_PASS} -H 'Content-Type: application/json' -X PUT "https://localhost:9200/_opendistro/_ism/policies/policy_1" -d "@/usr/lib/perfsonar/archive/pselastic_setup/conf.d/ilm/install/pscheduler_default_policy.json"
+echo "[Applying policy]"
+# Apply policy to index
+curl -v -k -u admin:${ADMIN_PASS} -H 'Content-Type: application/json' -X POST "https://localhost:9200/_opendistro/_ism/add/pscheduler*" -d '{ "policy_id": "policy_1" }'
+echo "[DONE]"
+echo ""
