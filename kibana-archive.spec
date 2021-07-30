@@ -38,14 +38,19 @@ rm -rf %{buildroot}
 %post
 #create config directory
 mkdir -p %{config_base}
-%{scripts_base}/pselastic_secure.sh
 
 #Restart/enable kibana 
 %systemd_post kibana.service
 if [ "$1" = "1" ]; then
     #if new install, then enable
+    systemctl daemon-reload
     systemctl enable kibana.service
+    #start kibana
     systemctl start kibana.service
+    #wait kibana complete startup
+    sleep 100
+    #run kibana script
+    bash %{scripts_base}/kibana_secure.sh
 fi
 
 %preun

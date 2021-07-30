@@ -6,7 +6,6 @@ KIBANA_PASS=$(grep "kibanaserver " /etc/perfsonar/elastic/auth_setup.out | head 
 sed -i "s/elasticsearch.password: kibanaserver/elasticsearch.password: ${KIBANA_PASS}/g" /etc/kibana/kibana.yml
 echo "[DONE]"
 echo ""
-#!/bin/bash
 
 # 2. Pre configure kibana's index patterns
 echo "[Add default index-pattern]"
