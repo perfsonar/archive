@@ -41,21 +41,21 @@ RUN cd /app && \
     # kibana
     mv kibana-archive-*.tar.gz ~/rpmbuild/SOURCES/ && \
     rpmbuild -bs kibana-archive.spec && \
-    rpmbuild -ba kibana-archive.spec && \
+    rpmbuild -ba kibana-archive.spec
     # install both
-    yum install -y ~/rpmbuild/RPMS/noarch/*.rpm
+    #yum install -y ~/rpmbuild/RPMS/noarch/*.rpm
 
 #This is elasticsearch docker specific stuff that is only needed here
-RUN mkdir -p /var/lib/perfsonar/archive/tmp && \
-    echo "" >> /etc/elasticsearch/jvm.options && \
-    echo "-Djava.io.tmpdir=/var/lib/perfsonar/archive/tmp" >> /etc/elasticsearch/jvm.options && \
-    chown -R elasticsearch:elasticsearch /var/lib/perfsonar/archive
+#RUN mkdir -p /var/lib/perfsonar/archive/tmp && \
+#    echo "" >> /etc/elasticsearch/jvm.options && \
+#    echo "-Djava.io.tmpdir=/var/lib/perfsonar/archive/tmp" >> /etc/elasticsearch/jvm.options && \
+#    chown -R elasticsearch:elasticsearch /var/lib/perfsonar/archive
 
 #This is logstash docker specific stuff that is only needed here
-RUN mkdir -p /var/lib/perfsonar/logstash/tmp && \
-    echo "" >> /etc/logstash/jvm.options && \
-    echo "-Djava.io.tmpdir=/var/lib/perfsonar/logstash/tmp" >> /etc/logstash/jvm.options && \
-    chown -R logstash:logstash /var/lib/perfsonar/logstash
+#RUN mkdir -p /var/lib/perfsonar/logstash/tmp && \
+#    echo "" >> /etc/logstash/jvm.options && \
+#    echo "-Djava.io.tmpdir=/var/lib/perfsonar/logstash/tmp" >> /etc/logstash/jvm.options && \
+#    chown -R logstash:logstash /var/lib/perfsonar/logstash
 
 #shared volumes
 VOLUME /sys/fs/cgroup
