@@ -46,17 +46,27 @@ rm -rf %{buildroot}
 mkdir -p %{config_base}
 
 export JAVA_HOME=/usr/share/elasticsearch/jdk
-%{scripts_base}/pselastic_secure.sh
 
 #Restart/enable elasticsearch and logstash
 %systemd_post elasticsearch.service
 %systemd_post logstash.service
 if [ "$1" = "1" ]; then
     #if new install, then enable
+    systemctl daemon-reload
     systemctl enable elasticsearch.service
-    systemctl start elasticsearch.service
     systemctl enable logstash.service
+    #fix directory permissions
+    chmod g+ws /etc/elasticsearch/
+    chown -R root:elasticsearch /etc/elasticsearch/
+    #run elasticsearch pre startup script
+    bash %{scripts_base}/pselastic_secure_pre.sh
+    #start services
+    systemctl start elasticsearch.service
     systemctl start logstash.service
+    #wait elasticsearch complete startup
+    sleep 100
+    #run elasticsearch post startup script
+    bash %{scripts_base}/pselastic_secure_pos.sh
 fi
 
 %preun
