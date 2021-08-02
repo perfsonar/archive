@@ -60,11 +60,12 @@ if [ "$1" = "1" ]; then
     chown -R root:elasticsearch /etc/elasticsearch/
     #run elasticsearch pre startup script
     bash %{scripts_base}/pselastic_secure_pre.sh
-    #start services
+    #start elasticsearch
     systemctl start elasticsearch.service
-    systemctl start logstash.service
     #wait elasticsearch complete startup
     sleep 100
+    #restart logstash
+    systemctl restart logstash.service
     #run elasticsearch post startup script
     bash %{scripts_base}/pselastic_secure_pos.sh
 fi
