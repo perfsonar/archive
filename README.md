@@ -10,9 +10,15 @@ The perfSONAR Measurement Archive based on Elasticsearch
 make centos7
 
 ##verify RPM install
+###enter into test container
 docker-compose -f docker-compose.qa.yml up -d centos7
 docker-compose -f docker-compose.qa.yml exec centos7 bash
 
+###install RPM packages
+yum install -y /root/rpmbuild/RPMS/noarch/perfsonar-archive*.rpm
+yum install -y /root/rpmbuild/RPMS/noarch/kibana-archive*.rpm
+
+###verify services
 systemctl status kibana
 systemctl status logstash
 systemctl status elasticsearch
