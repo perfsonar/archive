@@ -45,12 +45,14 @@ if [ "$1" = "1" ]; then
     #if new install, then enable
     systemctl daemon-reload
     systemctl enable kibana.service
+    #run kibana pre startup script
+    bash %{scripts_base}/kibana_secure_pre.sh
     #start kibana
     systemctl start kibana.service
     #wait kibana complete startup
     sleep 100
-    #run kibana script
-    bash %{scripts_base}/kibana_secure.sh
+    #run kibana post startup script
+    bash %{scripts_base}/kibana_secure_pos.sh
 fi
 
 %preun
