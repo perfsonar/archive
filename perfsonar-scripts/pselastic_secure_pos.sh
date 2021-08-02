@@ -1,5 +1,16 @@
 #!/bin/bash
 
+PASSWORD_FILE=/etc/perfsonar/elastic/auth_setup.out
+# Get password for admin user
+ADMIN_PASS=$(grep "admin " $PASSWORD_FILE | head -n 1 | sed 's/^admin //')
+if [ $? -ne 0 ]; then
+    echo "Failed to parse password"
+    exit 1
+elif [ -z "$ADMIN_PASS" ]; then
+    echo "Unable to find admin password in $PASSWORD_FILE. Exiting."
+    exit 1
+fi
+
 # Configure index state management (ISM) policy for pscheduler indices
 echo "[Create policy]"
 # Create index policy
