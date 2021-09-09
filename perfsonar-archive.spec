@@ -19,9 +19,11 @@ Source0:		perfsonar-archive-%{version}.%{perfsonar_auto_relnum}.tar.gz
 BuildRoot:		%{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 BuildArch:		noarch
 Requires:		opendistroforelasticsearch
-Requires:       	java-11-openjdk
-Requires:       	openssl
-Requires:       	perfsonar-logstash
+Requires:       java-11-openjdk
+Requires:       openssl
+Requires:       jq
+Requires:       perfsonar-logstash
+Requires:       perfsonar-elmond
 
 %description
 A package that installs the perfSONAR Archive based on Logstash and Opendistro for Elasticsearch.
@@ -68,6 +70,10 @@ if [ "$1" = "1" ]; then
     systemctl restart logstash.service
     #run elasticsearch post startup script
     bash %{scripts_base}/pselastic_secure_pos.sh
+    #run elmond configuration script
+    bash %{scripts_base}/elmond_configuration.sh
+    #restart elmond
+    systemctl restart elmond.service
 fi
 
 %preun
@@ -87,5 +93,8 @@ fi
 %{setup_base}/pselastic/*
 
 %changelog
+* Thu Sep 09 2021 daniel.neto@rnp.br 4.4.0-0.0.a1
+- Adding script to configure elmond
+
 * Sun Mar 21 2021 andy@es.net 4.4.0-0.0.a1
 - Initial spec file created
