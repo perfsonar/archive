@@ -72,6 +72,7 @@ if [ "$1" = "1" ]; then
     bash %{scripts_base}/pselastic_secure_pos.sh
     #run elmond configuration script
     bash %{scripts_base}/elmond_configuration.sh
+    usermod -a -G elasticsearch perfsonar
     #restart elmond
     systemctl restart elmond.service
 fi
