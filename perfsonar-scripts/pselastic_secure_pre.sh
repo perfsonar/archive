@@ -1,17 +1,11 @@
 #!/bin/bash
 
-SCRIPT_DIR=$(dirname $0)
-APP_DIR="$SCRIPT_DIR/../.."
-SETUP_DIR="${APP_DIR}/pselastic_setup"
 PASSWORD_DIR=/etc/perfsonar/elastic
 PASSWORD_FILE=${PASSWORD_DIR}/auth_setup.out
 ADMIN_LOGIN_FILE=${PASSWORD_DIR}/elastic_login
 LOGSTASH_USER=pscheduler_logstash
-LOGSTASH_PASSWORD_FILE=${PASSWORD_DIR}/${LOGSTASH_USER}
-ENV_FILE="${SCRIPT_DIR}/../.env"
 ELASTIC_CONFIG_DIR=/etc/elasticsearch
 ELASTIC_CONFIG_FILE=${ELASTIC_CONFIG_DIR}/elasticsearch.yml
-#ELASTIC_CERT_FILE=${ELASTIC_CONFIG_DIR}/elastic-cert.p12
 OPENDISTRO_SECURITY_PLUGIN=/usr/share/elasticsearch/plugins/opendistro_security
 OPENDISTRO_SECURITY_FILES=${OPENDISTRO_SECURITY_PLUGIN}/securityconfig
 
@@ -151,6 +145,7 @@ else
     echo "pscheduler_logstash:" | tee -a $OPENDISTRO_SECURITY_FILES/roles.yml > /dev/null
     echo "  cluster_permissions:" | tee -a $OPENDISTRO_SECURITY_FILES/roles.yml > /dev/null
     echo "    - 'cluster_monitor'" | tee -a $OPENDISTRO_SECURITY_FILES/roles.yml > /dev/null
+    echo "    - 'cluster_manage_index_templates'" | tee -a $OPENDISTRO_SECURITY_FILES/roles.yml > /dev/null
     echo "  index_permissions:" | tee -a $OPENDISTRO_SECURITY_FILES/roles.yml > /dev/null
     echo "    - index_patterns:" | tee -a $OPENDISTRO_SECURITY_FILES/roles.yml > /dev/null
     echo "      - 'pscheduler_*'" | tee -a $OPENDISTRO_SECURITY_FILES/roles.yml > /dev/null
