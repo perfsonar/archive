@@ -93,6 +93,7 @@ fi
 %{setup_base}/conf.d/roles/*
 %{setup_base}/conf.d/users/*
 %{setup_base}/pselastic/*
+/etc/pscheduler/default-archives/http_logstash.json
 
 %changelog
 * Thu Sep 09 2021 daniel.neto@rnp.br 4.4.0-0.0.a1
