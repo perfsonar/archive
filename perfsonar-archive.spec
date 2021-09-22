@@ -64,8 +64,6 @@ if [ "$1" = "1" ]; then
     bash %{scripts_base}/pselastic_secure_pre.sh
     #start elasticsearch
     systemctl start elasticsearch.service
-    #wait elasticsearch complete startup
-    sleep 100
     #restart logstash
     systemctl restart logstash.service
     #restart the service to fix port conflict

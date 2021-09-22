@@ -49,8 +49,6 @@ if [ "$1" = "1" ]; then
     bash %{scripts_base}/kibana_secure_pre.sh
     #start kibana
     systemctl start kibana.service
-    #wait kibana complete startup
-    sleep 100
     #run kibana post startup script
     bash %{scripts_base}/kibana_secure_pos.sh
 fi
