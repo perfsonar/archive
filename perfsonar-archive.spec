@@ -39,6 +39,7 @@ A package that installs the perfSONAR Archive based on Logstash and Opendistro f
 
 %install
 make PERFSONAR-ROOTPATH=%{buildroot}/%{archive_base} PERFSONAR-CONFIGPATH=%{buildroot}/%{config_base} install
+install -D -m 0644 config/pscheduler-default-archive.json %{buildroot}/etc/pscheduler/default-archives/http_logstash.json
 
 %clean
 rm -rf %{buildroot}
