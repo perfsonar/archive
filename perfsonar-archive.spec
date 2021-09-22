@@ -76,6 +76,8 @@ if [ "$1" = "1" ]; then
     usermod -a -G elasticsearch perfsonar
     #restart elmond
     systemctl restart elmond.service
+    #restart pscheduler-archiver to load new default-archive
+    systemctl restart pscheduler-archiver
 fi
 
 %preun
