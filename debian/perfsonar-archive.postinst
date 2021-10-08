@@ -1,0 +1,29 @@
+#if new install, then enable
+systemctl daemon-reload
+systemctl enable elasticsearch.service
+systemctl enable logstash.service
+
+#fix directory permissions
+chmod g+ws /etc/elasticsearch/
+chown -R root:elasticsearch /etc/elasticsearch/
+
+#run elasticsearch pre startup script
+bash /usr/lib/perfsonar/archive/perfsonar-scripts/pselastic_secure_pre.sh
+
+#start elasticsearch
+systemctl start elasticsearch.service
+
+#restart logstash
+systemctl restart logstash.service
+
+#restart the service to fix port conflict
+systemctl restart opendistro-performance-analyzer.service
+
+#run elasticsearch post startup script
+bash /usr/lib/perfsonar/archive/perfsonar-scripts/pselastic_secure_pos.sh
+
+#restart pscheduler-archiver to load new default-archive
+systemctl restart pscheduler-archiver
+
+#DEBHELPER#
+exit 0

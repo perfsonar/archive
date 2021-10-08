@@ -1,0 +1,13 @@
+Source: perfsonar-archive
+Maintainer: perfSONAR developers <debian@perfsonar.net>
+Section: misc
+Priority: optional
+Standards-Version: 4.3.0
+Build-Depends: debhelper (>= 10)
+Homepage: http://www.perfsonar.net
+
+Package: perfsonar-archive
+Architecture: all
+Depends: ${shlibs:Depends}, ${misc:Depends}, openjdk-11-jdk, openssl, jq
+Description: perfsonar archive
+ A package that installs the perfSONAR measurement archive to store measurements with OpenSearch.
