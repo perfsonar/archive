@@ -41,8 +41,8 @@ install:
 # already generated a docker-compose.yml and stops containers accordingly
 # Uses ${DC_CMD} and ${DC_CMD_BASE} to cleanup both default and non-default images
 dc_clean:
-	${DC_CMD} -f docker-compose.yml -f docker-compose.qa.yml down -v
-	${DC_CMD_BASE} -f docker-compose.yml -f docker-compose.qa.yml down -v
+	${DC_CMD} -f docker-compose.qa.yml down -v
+	${DC_CMD_BASE} -f docker-compose.qa.yml down -v
 
 clean:
 	rm -rf artifacts/
