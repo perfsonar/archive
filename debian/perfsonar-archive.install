@@ -1,3 +1,0 @@
-pselastic_setup/* /usr/lib/perfsonar/archive/pselastic_setup/bin/
-perfsonar-scripts/* /usr/lib/perfsonar/archive/perfsonar-scripts/
-config/pscheduler-default-archive.json /etc/pscheduler/default-archives/http_logstash.json
