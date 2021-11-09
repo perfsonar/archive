@@ -1,8 +1,9 @@
 #!/bin/sh
 # preinst script for perfsonar-archive
 
-/usr/sbin/groupadd -r perfsonar 2> /dev/null || :
-/usr/sbin/useradd -g perfsonar -r -s /sbin/nologin -c "perfSONAR User" -d /tmp perfsonar 2> /dev/null || :
+groupadd -r perfsonar 2> /dev/null || :
+useradd -g perfsonar -r -s /sbin/nologin -c "perfSONAR User" -d /tmp perfsonar 2> /dev/null || :
 
 #DEBHELPER#
+
 exit 0
