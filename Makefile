@@ -5,7 +5,6 @@ KIBANA-PACKAGE=kibana-archive
 PERFSONAR-ROOTPATH=/usr/lib/perfsonar/archive
 KIBANA-ROOTPATH=/usr/lib/kibana/archive
 PERFSONAR-CONFIGPATH=/etc/perfsonar/archive
-PSCHEDULER-DEFAULT-ARCHIVER-PATH=/etc/pscheduler/default-archives
 KIBANA-CONFIGPATH=/etc/kibana/archive
 PERFSONAR_AUTO_VERSION=4.4.0
 PERFSONAR_AUTO_RELNUM=0.0.a1
@@ -37,14 +36,6 @@ install:
 	mkdir -p ${KIBANA-ROOTPATH}/kibana-scripts
 	mkdir -p ${KIBANA-CONFIGPATH}
 	cp -r kibana-scripts/* ${KIBANA-ROOTPATH}/kibana-scripts/
-
-elastic_deb_install:
-	mkdir -p ${PERFSONAR-ROOTPATH}/perfsonar-scripts
-	mkdir -p ${PERFSONAR-ROOTPATH}/pselastic_setup
-	mkdir -p ${PERFSONAR-CONFIGPATH}
-	cp -r perfsonar-scripts/* ${PERFSONAR-ROOTPATH}/perfsonar-scripts/
-	cp -r pselastic_setup/* ${PERFSONAR-ROOTPATH}/pselastic_setup/
-	cp -r config/pscheduler-default-archive.json ${PSCHEDULER-DEFAULT-ARCHIVER-PATH}/http_logstash.json
 
 # Some of the jobs require the containers to be down. Detects if we have 
 # already generated a docker-compose.yml and stops containers accordingly
