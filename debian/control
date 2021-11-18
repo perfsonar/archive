@@ -8,6 +8,6 @@ Homepage: http://www.perfsonar.net
 
 Package: perfsonar-archive
 Architecture: all
-Depends: ${shlibs:Depends}, ${misc:Depends}, openjdk-11-jdk, openssl, jq, python3
-Description: perfsonar measurement archive
- A package that installs the perfSONAR measurement archive to store measurements with OpenSearch.
+Depends: ${shlibs:Depends}, ${misc:Depends}, openjdk-11-jdk, openssl, jq, python3, perfsonar-logstash, perfsonar-elmond
+Description: Perfsonar measurement archive
+ Perfsonar archive using Amazon Opendistro to store measurements.

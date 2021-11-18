@@ -1,6 +1,13 @@
 #!/bin/sh
 # postinst script for perfsonar-archive
 
+export JAVA_HOME=/usr/share/elasticsearch/jdk
+
+# assigns file permissions
+chown -R perfsonar:perfsonar /usr/lib/perfsonar/archive /etc/pscheduler/default-archives
+chmod 644 $(find /usr/lib/perfsonar/archive -type f) /etc/pscheduler/default-archives/http_logstash.json
+chmod 755 $(find /usr/lib/perfsonar/archive -type d) /etc/pscheduler/default-archives /usr/lib/perfsonar/archive/pselastic_setup/bin/* /usr/lib/perfsonar/archive/perfsonar-scripts/*
+
 # if new install, then enable
 systemctl daemon-reload
 systemctl enable elasticsearch.service
@@ -24,6 +31,13 @@ systemctl restart opendistro-performance-analyzer.service
 
 # run elasticsearch post startup script
 bash /usr/lib/perfsonar/archive/perfsonar-scripts/pselastic_secure_pos.sh
+
+# run elmond configuration script
+bash /usr/lib/perfsonar/archive/perfsonar-scripts/elmond_configuration.sh
+usermod -a -G elasticsearch perfsonar
+
+# restart elmond
+systemctl restart perfsonar-elmond.service
 
 # restart pscheduler-archiver to load new default-archive
 systemctl restart pscheduler-archiver
