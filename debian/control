@@ -8,6 +8,6 @@ Homepage: http://www.perfsonar.net
 
 Package: perfsonar-archive
 Architecture: all
-Depends: ${shlibs:Depends}, ${misc:Depends}, openjdk-11-jdk, openssl, jq, python3, perfsonar-logstash, perfsonar-elmond
+Depends: ${shlibs:Depends}, ${misc:Depends}, opendistroforelasticsearch, openjdk-11-jdk, openssl, jq, python3, perfsonar-logstash, perfsonar-elmond
 Description: Perfsonar measurement archive
  Perfsonar archive using Amazon Opendistro to store measurements.
