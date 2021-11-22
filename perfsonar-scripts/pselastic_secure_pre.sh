@@ -20,7 +20,7 @@ ELASTIC_CONFIG_DIR=/etc/elasticsearch
 ELASTIC_CONFIG_FILE=${ELASTIC_CONFIG_DIR}/elasticsearch.yml
 OPENDISTRO_SECURITY_PLUGIN=/usr/share/elasticsearch/plugins/opendistro_security
 OPENDISTRO_SECURITY_FILES=${OPENDISTRO_SECURITY_PLUGIN}/securityconfig
-if [[ "$OS" == Debian ]]; then
+if [[ $OS == *"Debian"* ]]; then
     CACERTS_FILE=/usr/share/elasticsearch/jdk/lib/security/cacerts
     LOGSTASH_SYSCONFIG=/etc/default/logstash
 else
