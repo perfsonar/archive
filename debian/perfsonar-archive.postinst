@@ -19,6 +19,7 @@ chown -R root:elasticsearch /etc/elasticsearch/
 
 # run elasticsearch pre startup script
 bash /usr/lib/perfsonar/archive/perfsonar-scripts/pselastic_secure_pre.sh
+chown elasticsearch:elasticsearch /etc/elasticsearch/*.pem
 
 # start elasticsearch
 systemctl start elasticsearch.service
