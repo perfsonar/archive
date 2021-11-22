@@ -238,7 +238,7 @@ echo ""
 # 5. Configure logstash to use pscheduler_logstash user/password
 echo "[Configure logstash]"
 LOGSTASH_PASS=$(grep "pscheduler_logstash " $PASSWORD_FILE | head -n 1 | sed 's/^pscheduler_logstash //')
-echo "LOGSTASH_ELASTIC_USER=${LOGSTASH_USER}" | tee -a /etc/sysconfig/logstash > /dev/null
+echo "LOGSTASH_ELASTIC_USER=${LOGSTASH_USER}" | tee -a $LOGSTASH_SYSCONFIG > /dev/null
 sed -i 's/elastic_output_password=pscheduler_logstash/elastic_output_password='$LOGSTASH_PASS'/g' $LOGSTASH_SYSCONFIG
 echo "[DONE]"
 echo ""
