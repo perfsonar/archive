@@ -1,5 +1,17 @@
 #!/bin/bash
 
+if [ -f /etc/os-release ]; then
+    . /etc/os-release
+    OS=$NAME
+elif type lsb_release >/dev/null 2>&1; then
+    OS=$(lsb_release -si)
+elif [ -f /etc/lsb-release ]; then
+    . /etc/lsb-release
+    OS=$DISTRIB_ID
+elif [ -f /etc/debian_version ]; then
+    OS=Debian
+fi
+
 PASSWORD_DIR=/etc/perfsonar/elastic
 PASSWORD_FILE=${PASSWORD_DIR}/auth_setup.out
 ADMIN_LOGIN_FILE=${PASSWORD_DIR}/elastic_login
@@ -8,7 +20,13 @@ ELASTIC_CONFIG_DIR=/etc/elasticsearch
 ELASTIC_CONFIG_FILE=${ELASTIC_CONFIG_DIR}/elasticsearch.yml
 OPENDISTRO_SECURITY_PLUGIN=/usr/share/elasticsearch/plugins/opendistro_security
 OPENDISTRO_SECURITY_FILES=${OPENDISTRO_SECURITY_PLUGIN}/securityconfig
-CACERTS_FILE=/etc/pki/java/cacerts
+if [[ "$OS" == Debian ]]; then
+    CACERTS_FILE=/usr/share/elasticsearch/jdk/lib/security/cacerts
+    LOGSTASH_SYSCONFIG=/etc/default/logstash
+else
+    CACERTS_FILE=/etc/pki/java/cacerts
+    LOGSTASH_SYSCONFIG=/etc/sysconfig/logstash
+fi
 
 # Certificates configurations
 # Clear out any config old settings
@@ -43,9 +61,6 @@ openssl x509 -req -in ${ELASTIC_CONFIG_DIR}/node.csr -CA ${ELASTIC_CONFIG_DIR}/r
 rm -f ${ELASTIC_CONFIG_DIR}/admin-key-temp.pem ${ELASTIC_CONFIG_DIR}/admin.csr ${ELASTIC_CONFIG_DIR}/node-key-temp.pem ${ELASTIC_CONFIG_DIR}/node.csr
 # Add to Java cacerts
 openssl x509 -outform der -in ${ELASTIC_CONFIG_DIR}/node.pem -out ${ELASTIC_CONFIG_DIR}/node.der
-if [ ! -f ${CACERTS_FILE} ]; then
-    CACERTS_FILE=/usr/share/elasticsearch/jdk/lib/security/cacerts
-fi
 keytool -import -alias node -keystore ${CACERTS_FILE} -file ${ELASTIC_CONFIG_DIR}/node.der -storepass changeit -noprompt
 
 # Apply new settings
@@ -224,7 +239,7 @@ echo ""
 echo "[Configure logstash]"
 LOGSTASH_PASS=$(grep "pscheduler_logstash " $PASSWORD_FILE | head -n 1 | sed 's/^pscheduler_logstash //')
 echo "LOGSTASH_ELASTIC_USER=${LOGSTASH_USER}" | tee -a /etc/sysconfig/logstash > /dev/null
-sed -i 's/elastic_output_password=pscheduler_logstash/elastic_output_password='$LOGSTASH_PASS'/g' /etc/sysconfig/logstash
+sed -i 's/elastic_output_password=pscheduler_logstash/elastic_output_password='$LOGSTASH_PASS'/g' $LOGSTASH_SYSCONFIG
 echo "[DONE]"
 echo ""
 
