@@ -24,8 +24,8 @@ chown elasticsearch:elasticsearch /etc/elasticsearch/*.pem
 # start elasticsearch
 systemctl start elasticsearch.service
 
-# restart logstash
-systemctl restart logstash.service
+# restart logstash forcibly due to stalled ingress pipeline
+ps -aux | grep ^logstash | awk '{print $2}' | xargs kill -9
 
 # restart the service to fix port conflict
 systemctl restart opendistro-performance-analyzer.service
