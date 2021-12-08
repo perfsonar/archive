@@ -19,7 +19,7 @@ chown -R root:elasticsearch /etc/elasticsearch/
 
 # run elasticsearch pre startup script
 bash /usr/lib/perfsonar/archive/perfsonar-scripts/pselastic_secure_pre.sh
-chown elasticsearch:elasticsearch /etc/elasticsearch/*.pem
+chmod g+r /etc/elasticsearch/*.pem
 
 # start elasticsearch
 systemctl start elasticsearch.service
@@ -41,9 +41,6 @@ usermod -a -G elasticsearch perfsonar
 
 # restart elmond
 systemctl restart perfsonar-elmond.service
-
-# restart pscheduler-archiver to load new default-archive
-systemctl restart pscheduler-archiver
 
 #DEBHELPER#
 exit 0
