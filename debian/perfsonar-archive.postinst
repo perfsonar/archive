@@ -6,7 +6,7 @@ export JAVA_HOME=/usr/share/elasticsearch/jdk
 # assigns file permissions
 chown -R perfsonar:perfsonar /usr/lib/perfsonar/archive /etc/pscheduler/default-archives
 chmod 644 $(find /usr/lib/perfsonar/archive -type f) /etc/pscheduler/default-archives/http_logstash.json
-chmod 755 $(find /usr/lib/perfsonar/archive -type d) /etc/pscheduler/default-archives /usr/lib/perfsonar/archive/pselastic_setup/bin/* /usr/lib/perfsonar/archive/perfsonar-scripts/*
+chmod 755 $(find /usr/lib/perfsonar/archive -type d) /etc/pscheduler/default-archives /usr/lib/perfsonar/archive/perfsonar-scripts/*
 
 # if new install, then enable
 systemctl daemon-reload
@@ -40,7 +40,7 @@ bash /usr/lib/perfsonar/archive/perfsonar-scripts/elmond_configuration.sh
 usermod -a -G elasticsearch perfsonar
 
 # restart elmond
-systemctl restart perfsonar-elmond.service
+systemctl restart elmond.service
 
 #DEBHELPER#
 exit 0

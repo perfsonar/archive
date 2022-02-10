@@ -245,9 +245,9 @@ echo ""
 
 # 6. Fixes
 #changing the logstash port range to avoid conflict with opendistro-performance-analyzer
-sed -i 's/# http.port: 9600-9700/http.port: 9601-9700/g' /etc/logstash/logstash.yml
+sed -i 's/# api.http.port: 9600-9700/api.http.port: 9601-9700/g' /etc/logstash/logstash.yml
 
 #issue: https://github.com/opendistro-for-elasticsearch/performance-analyzer/issues/229
-echo false | sudo tee /usr/share/elasticsearch/data/batch_metrics_enabled.conf
+echo false | tee /usr/share/elasticsearch/data/batch_metrics_enabled.conf
 
 bash ${OPENDISTRO_SECURITY_PLUGIN}/tools/securityadmin.sh -cd ${OPENDISTRO_SECURITY_PLUGIN}/securityconfig -icl -nhnv -cacert ${ELASTIC_CONFIG_DIR}/root-ca.pem -cert ${ELASTIC_CONFIG_DIR}/admin.pem -key ${ELASTIC_CONFIG_DIR}/admin-key.pem

@@ -1,7 +1,7 @@
 %define install_base        /usr/lib/perfsonar
 %define archive_base        %{install_base}/archive
 %define scripts_base        %{archive_base}/perfsonar-scripts
-%define setup_base          %{archive_base}/pselastic_setup
+%define setup_base          %{archive_base}/config
 %define config_base         /etc/perfsonar/archive
 
 #Version variables set by automated scripts
@@ -90,11 +90,9 @@ fi
 %defattr(0644,perfsonar,perfsonar,0755)
 %license LICENSE
 %attr(0755, perfsonar, perfsonar) %{scripts_base}/*
-%attr(0755, perfsonar, perfsonar) %{setup_base}/bin/*
-%{setup_base}/conf.d/ilm/*
-%{setup_base}/conf.d/roles/*
-%{setup_base}/conf.d/users/*
-%{setup_base}/pselastic/*
+%{setup_base}/ilm/*
+%{setup_base}/roles/*
+%{setup_base}/users/*
 /etc/pscheduler/default-archives/http_logstash.json
 
 %changelog

@@ -1,3 +1,5 @@
-pselastic_setup/* /usr/lib/perfsonar/archive/pselastic_setup/
-perfsonar-scripts/* /usr/lib/perfsonar/archive/perfsonar-scripts/
 config/pscheduler-default-archive.json /etc/pscheduler/default-archives/
+config/ilm/* /usr/lib/perfsonar/archive/conf/ilm/
+config/roles/* /usr/lib/perfsonar/archive/conf/roles/
+config/users/* /usr/lib/perfsonar/archive/conf/users/
+perfsonar-scripts/* /usr/lib/perfsonar/archive/perfsonar-scripts/

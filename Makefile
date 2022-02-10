@@ -28,10 +28,11 @@ dist:
 install:
 	# elasticsearch and logstash
 	mkdir -p ${PERFSONAR-ROOTPATH}/perfsonar-scripts
-	mkdir -p ${PERFSONAR-ROOTPATH}/pselastic_setup
+	mkdir -p ${PERFSONAR-ROOTPATH}/config
 	mkdir -p ${PERFSONAR-CONFIGPATH}
-	cp -r perfsonar-scripts/* ${PERFSONAR-ROOTPATH}/perfsonar-scripts/
-	cp -r pselastic_setup/* ${PERFSONAR-ROOTPATH}/pselastic_setup
+	cp -r perfsonar-scripts/* ${PERFSONAR-ROOTPATH}/perfsonar-scripts
+	cp -r config/* ${PERFSONAR-ROOTPATH}/config
+	rm ${PERFSONAR-ROOTPATH}/config/pscheduler-default-archive.json
 	# kibana
 	mkdir -p ${KIBANA-ROOTPATH}/kibana-scripts
 	mkdir -p ${KIBANA-CONFIGPATH}
