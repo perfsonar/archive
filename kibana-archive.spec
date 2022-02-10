@@ -23,6 +23,8 @@ Requires:       	opendistroforelasticsearch-kibana
 A package that installs and configure Kibana for Opendistro.
 
 %pre
+/usr/sbin/groupadd -r perfsonar 2> /dev/null || :
+/usr/sbin/useradd -g perfsonar -r -s /sbin/nologin -c "perfSONAR User" -d /tmp perfsonar 2> /dev/null || :
 
 %prep
 %setup -q -n kibana-archive-%{version}.%{perfsonar_auto_relnum}
