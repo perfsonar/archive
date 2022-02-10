@@ -93,6 +93,7 @@ fi
 %{setup_base}/ilm/*
 %{setup_base}/roles/*
 %{setup_base}/users/*
+%{setup_base}/index_template-pscheduler.json
 /etc/pscheduler/default-archives/http_logstash.json
 
 %changelog

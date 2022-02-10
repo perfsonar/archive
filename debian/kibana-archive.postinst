@@ -10,13 +10,13 @@ systemctl daemon-reload
 systemctl enable kibana.service
 
 #run kibana pre startup script
-bash /usr/lib/kibana/perfsonar/archive/kibana_secure_pre.sh
+bash /usr/lib/kibana/archive/kibana-scripts/kibana_secure_pre.sh
 
 #start kibana
 systemctl start kibana.service
 
 #run kibana post startup script
-bash /usr/lib/kibana/perfsonar/archive/kibana_secure_pos.sh
+bash /usr/lib/kibana/archive/kibana-scripts/kibana_secure_pos.sh
 
 #DEBHELPER#
 exit 0

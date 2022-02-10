@@ -1,5 +1,6 @@
-config/pscheduler-default-archive.json /etc/pscheduler/default-archives/
-config/ilm/* /usr/lib/perfsonar/archive/conf/ilm/
-config/roles/* /usr/lib/perfsonar/archive/conf/roles/
-config/users/* /usr/lib/perfsonar/archive/conf/users/
+config/pscheduler-default-archive.json /etc/pscheduler/default-archives/http_logstash.json
+config/index_template-pscheduler.json /usr/lib/perfsonar/archive/config/
+config/ilm/* /usr/lib/perfsonar/archive/config/ilm/
+config/roles/* /usr/lib/perfsonar/archive/config/roles/
+config/users/* /usr/lib/perfsonar/archive/config/users/
 perfsonar-scripts/* /usr/lib/perfsonar/archive/perfsonar-scripts/

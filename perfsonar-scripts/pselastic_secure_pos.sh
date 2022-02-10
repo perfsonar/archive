@@ -47,6 +47,6 @@ echo ""
 # Configure index template for pscheduler index patterns
 echo "[Create template]"
 # Update template
-curl -k -u admin:${ADMIN_PASS} -H 'Content-Type: application/json' -XPUT "https://localhost:9200/_index_template/pscheduler_default_policy" -d @/etc/perfsonar/logstash/index_template-pscheduler.json
+curl -k -u admin:${ADMIN_PASS} -H 'Content-Type: application/json' -XPUT "https://localhost:9200/_index_template/pscheduler_default_policy" -d @/usr/lib/perfsonar/archive/config/index_template-pscheduler.json
 echo -e "\n[DONE]"
 echo ""
