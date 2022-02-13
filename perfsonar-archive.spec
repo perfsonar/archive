@@ -77,7 +77,9 @@ if [ "$1" = "1" ]; then
     #restart elmond
     systemctl restart elmond.service
     #restart pscheduler-archiver to load new default-archive
-    systemctl restart pscheduler-archiver
+    if systemctl list-units --full -all | grep -Fq "pscheduler-archiver.service"; then
+        systemctl restart pscheduler-archiver
+    fi
 fi
 
 %preun
