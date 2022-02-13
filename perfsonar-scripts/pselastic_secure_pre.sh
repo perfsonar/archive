@@ -1,15 +1,11 @@
 #!/bin/bash
 
-if [ -f /etc/os-release ]; then
-    . /etc/os-release
-    OS=$NAME
-elif type lsb_release >/dev/null 2>&1; then
+if command -v lsb_release &> /dev/null; then 
     OS=$(lsb_release -si)
-elif [ -f /etc/lsb-release ]; then
-    . /etc/lsb-release
-    OS=$DISTRIB_ID
-elif [ -f /etc/debian_version ]; then
-    OS=Debian
+elif [ -f /etc/os-release ]; then
+    OS=$(awk -F= '/^NAME/{print $2}' /etc/os-release)
+else
+    OS="Unknown"
 fi
 
 PASSWORD_DIR=/etc/perfsonar/elastic
@@ -20,12 +16,16 @@ ELASTIC_CONFIG_DIR=/etc/elasticsearch
 ELASTIC_CONFIG_FILE=${ELASTIC_CONFIG_DIR}/elasticsearch.yml
 OPENDISTRO_SECURITY_PLUGIN=/usr/share/elasticsearch/plugins/opendistro_security
 OPENDISTRO_SECURITY_FILES=${OPENDISTRO_SECURITY_PLUGIN}/securityconfig
-if [[ $OS == *"Debian"* ]]; then
+
+if [[ $OS == *"CentOS"* ]]; then
+    CACERTS_FILE=/etc/pki/java/cacerts
+    LOGSTASH_SYSCONFIG=/etc/sysconfig/logstash
+elif [[ $OS == *"Debian"* ]] || [[ $OS == *"Ubuntu"* ]]; then
     CACERTS_FILE=/usr/share/elasticsearch/jdk/lib/security/cacerts
     LOGSTASH_SYSCONFIG=/etc/default/logstash
 else
-    CACERTS_FILE=/etc/pki/java/cacerts
-    LOGSTASH_SYSCONFIG=/etc/sysconfig/logstash
+    echo "$0 - [ERROR]: Unknown operating system"
+    exit 1
 fi
 
 # Certificates configurations
