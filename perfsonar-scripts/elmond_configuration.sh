@@ -7,9 +7,9 @@ jq --arg elasticURL  "https://admin:${ADMIN_PW}@localhost:9200" '.ELASTIC_HOSTS[
 
 mv -f ${TEMP_DIR}/elmond_config_temp.json ${ELMOND_CONFIG_FILE}
 
-jq --arg rootCert   '/etc/elasticsearch/root-ca.pem' \
-   --arg adminCert  '/etc/elasticsearch/admin.pem' \
-   --arg adminKey   '/etc/elasticsearch/admin-key.pem' \
+jq --arg rootCert   '/etc/opensearch/root-ca.pem' \
+   --arg adminCert  '/etc/opensearch/admin.pem' \
+   --arg adminKey   '/etc/opensearch/admin-key.pem' \
    '.use_ssl = true | .ca_certs = $rootCert | .client_cert = $adminCert | .client_key = $adminKey' \
    <<< {} > ${TEMP_DIR}/elastic_params_temp.json
 

@@ -18,7 +18,7 @@ URL:			http://www.perfsonar.net
 Source0:		perfsonar-archive-%{version}.%{perfsonar_auto_relnum}.tar.gz
 BuildRoot:		%{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 BuildArch:		noarch
-Requires:		opendistroforelasticsearch
+Requires:		opensearch
 Requires:       java-11-openjdk
 Requires:       openssl
 Requires:       jq
@@ -26,7 +26,7 @@ Requires:       perfsonar-logstash
 Requires:       perfsonar-elmond
 
 %description
-A package that installs the perfSONAR Archive based on Logstash and Opendistro for Elasticsearch.
+A package that installs the perfSONAR Archive based on Logstash and Opensearch.
 
 %pre
 /usr/sbin/groupadd -r perfsonar 2> /dev/null || :
@@ -48,32 +48,32 @@ rm -rf %{buildroot}
 #create config directory
 mkdir -p %{config_base}
 
-export JAVA_HOME=/usr/share/elasticsearch/jdk
+export JAVA_HOME=/usr/share/opensearch/jdk
 
 #Restart/enable elasticsearch and logstash
-%systemd_post elasticsearch.service
+%systemd_post opensearch.service
 %systemd_post logstash.service
 if [ "$1" = "1" ]; then
     #if new install, then enable
     systemctl daemon-reload
-    systemctl enable elasticsearch.service
+    systemctl enable opensearch.service
     systemctl enable logstash.service
     #fix directory permissions
-    chmod g+ws /etc/elasticsearch/
-    chown -R root:elasticsearch /etc/elasticsearch/
+    chmod g+ws /etc/opensearch/
+    chown -R root:opensearch /etc/opensearch/
     #run elasticsearch pre startup script
     bash %{scripts_base}/pselastic_secure_pre.sh
     #start elasticsearch
-    systemctl start elasticsearch.service
+    systemctl start opensearch.service
     #restart logstash
     systemctl restart logstash.service
     #restart the service to fix port conflict
-    systemctl restart opendistro-performance-analyzer.service
+    systemctl restart opensearch-performance-analyzer.service
     #run elasticsearch post startup script
     bash %{scripts_base}/pselastic_secure_pos.sh
     #run elmond configuration script
     bash %{scripts_base}/elmond_configuration.sh
-    usermod -a -G elasticsearch perfsonar
+    usermod -a -G opensearch perfsonar
     #restart elmond
     systemctl restart elmond.service
     #restart pscheduler-archiver to load new default-archive
@@ -83,10 +83,10 @@ if [ "$1" = "1" ]; then
 fi
 
 %preun
-%systemd_preun elasticsearch.service
+%systemd_preun opensearch.service
 
 %postun
-%systemd_postun_with_restart elasticsearch.service
+%systemd_postun_with_restart opensearch.service
 
 %files
 %defattr(0644,perfsonar,perfsonar,0755)
@@ -99,6 +99,9 @@ fi
 /etc/pscheduler/default-archives/http_logstash.json
 
 %changelog
+* Thu Feb 15 2022 luan.rios@rnp.br 4.4.0-0.0.a1
+- Update to use with opensearch
+
 * Thu Sep 09 2021 daniel.neto@rnp.br 4.4.0-0.0.a1
 - Adding script to configure elmond
 
