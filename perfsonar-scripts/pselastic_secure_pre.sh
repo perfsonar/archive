@@ -78,7 +78,6 @@ echo "  - CN=localhost,OU=node,O=node,L=test,C=br" | tee -a $ELASTIC_CONFIG_FILE
 chmod +x ${OPENSEARCH_SECURITY_PLUGIN}/tools/hash.sh
 
 # Generate default users random passwords, write them to tmp file and, if it works, move to permanent file
-rm $PASSWORD_FILE
 echo "[Generating elasticsearch passwords]"
 if [ -e "$PASSWORD_FILE" ]; then
     echo "$PASSWORD_FILE already exists, so not generating new passwords"
