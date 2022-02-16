@@ -38,11 +38,11 @@ RUN cd /app && \
     # elasticsearch and logstash
     mv perfsonar-archive-*.tar.gz ~/rpmbuild/SOURCES/ && \
     rpmbuild -bs perfsonar-archive.spec && \
-    rpmbuild -ba perfsonar-archive.spec 
-    # kibana
-    #mv kibana-archive-*.tar.gz ~/rpmbuild/SOURCES/ && \
-    #rpmbuild -bs kibana-archive.spec && \
-    #rpmbuild -ba kibana-archive.spec
+    rpmbuild -ba perfsonar-archive.spec && \ 
+    # dashboards
+    mv perfsonar-dashboards-*.tar.gz ~/rpmbuild/SOURCES/ && \
+    rpmbuild -bs perfsonar-dashboards.spec && \
+    rpmbuild -ba perfsonar-dashboards.spec
     # install both
     #yum install -y ~/rpmbuild/RPMS/noarch/*.rpm
 
