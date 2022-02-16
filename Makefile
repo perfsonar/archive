@@ -6,6 +6,7 @@ PERFSONAR-ROOTPATH=/usr/lib/perfsonar/archive
 KIBANA-ROOTPATH=/usr/lib/kibana/archive
 PERFSONAR-CONFIGPATH=/etc/perfsonar/archive
 KIBANA-CONFIGPATH=/etc/kibana/archive
+DEFAULT-ARCHIVES=/etc/pscheduler/default-archives
 PERFSONAR_AUTO_VERSION=4.4.0
 PERFSONAR_AUTO_RELNUM=0.0.a1
 VERSION=${PERFSONAR_AUTO_VERSION}
@@ -30,9 +31,11 @@ install:
 	mkdir -p ${PERFSONAR-ROOTPATH}/perfsonar-scripts
 	mkdir -p ${PERFSONAR-ROOTPATH}/config
 	mkdir -p ${PERFSONAR-CONFIGPATH}
+	mkdir -p ${DEFAULT-ARCHIVES}
 	cp -r perfsonar-scripts/* ${PERFSONAR-ROOTPATH}/perfsonar-scripts
 	cp -r config/* ${PERFSONAR-ROOTPATH}/config
-	rm ${PERFSONAR-ROOTPATH}/config/pscheduler-default-archive.json
+	echo ${DEFAULT-ARCHIVES}
+	mv ${PERFSONAR-ROOTPATH}/config/pscheduler-default-archive.json ${DEFAULT-ARCHIVES}
 	# kibana
 	mkdir -p ${KIBANA-ROOTPATH}/kibana-scripts
 	mkdir -p ${KIBANA-CONFIGPATH}

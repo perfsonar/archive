@@ -19,13 +19,14 @@ COPY ./docker/centos7/opendistro.repo /etc/yum.repos.d/opendistro.repo
 COPY ./docker/centos7/elastic.repo /etc/yum.repos.d/elastic.repo
 
 ##add perfSONAR nightly repo for perfsonar-logstash dependency
-RUN rpm -hUv http://software.internet2.edu/rpms/el7/x86_64/latest/packages/perfSONAR-repo-nightly-minor-0.10-1.noarch.rpm
+#RUN rpm -hUv http://software.internet2.edu/rpms/el7/x86_64/latest/packages/perfSONAR-repo-nightly-minor-0.10-1.noarch.rpm
 
 #Install build environment dependencies
 RUN yum update -y && \
     yum install -y epel-release make rpmbuild rpmdevtools git && \
     yum clean all && \
     mkdir -p ~/rpmbuild/{BUILD,RPMS,SOURCES,SPECS,SRPMS} && \
+    echo 'test' && \
     echo '%_topdir %(echo $HOME)/rpmbuild' > ~/.rpmmacros
 
 # Copy code to /app
@@ -37,11 +38,11 @@ RUN cd /app && \
     # elasticsearch and logstash
     mv perfsonar-archive-*.tar.gz ~/rpmbuild/SOURCES/ && \
     rpmbuild -bs perfsonar-archive.spec && \
-    rpmbuild -ba perfsonar-archive.spec && \
+    rpmbuild -ba perfsonar-archive.spec 
     # kibana
-    mv kibana-archive-*.tar.gz ~/rpmbuild/SOURCES/ && \
-    rpmbuild -bs kibana-archive.spec && \
-    rpmbuild -ba kibana-archive.spec
+    #mv kibana-archive-*.tar.gz ~/rpmbuild/SOURCES/ && \
+    #rpmbuild -bs kibana-archive.spec && \
+    #rpmbuild -ba kibana-archive.spec
     # install both
     #yum install -y ~/rpmbuild/RPMS/noarch/*.rpm
 
