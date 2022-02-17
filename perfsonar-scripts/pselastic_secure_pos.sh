@@ -1,5 +1,11 @@
 #!/bin/bash
 
+#OPENDISTRO_SECURITY_PLUGIN=/usr/share/elasticsearch/plugins/opendistro_security
+#ELASTIC_CONFIG_DIR=/etc/elasticsearch
+
+# Apply Pre Script Changes
+#bash ${OPENDISTRO_SECURITY_PLUGIN}/tools/securityadmin.sh -cd ${OPENDISTRO_SECURITY_PLUGIN}/securityconfig -icl -nhnv -cacert ${ELASTIC_CONFIG_DIR}/root-ca.pem -cert ${ELASTIC_CONFIG_DIR}/admin.pem -key ${ELASTIC_CONFIG_DIR}/admin-key.pem
+
 PASSWORD_FILE=/etc/perfsonar/elastic/auth_setup.out
 # Get password for admin user
 ADMIN_PASS=$(grep "admin " $PASSWORD_FILE | head -n 1 | sed 's/^admin //')
@@ -31,9 +37,16 @@ echo "API started!"
 # Configure index state management (ISM) policy for pscheduler indices
 echo "[Create policy]"
 # Create index policy
-curl -k -u admin:${ADMIN_PASS} -H 'Content-Type: application/json' -X PUT "https://localhost:9200/_opendistro/_ism/policies/pscheduler_default_policy" -d "@/usr/lib/perfsonar/archive/pselastic_setup/conf.d/ilm/install/pscheduler_default_policy.json" 2>/dev/null
+curl -k -u admin:${ADMIN_PASS} -H 'Content-Type: application/json' -X PUT "https://localhost:9200/_opendistro/_ism/policies/pscheduler_default_policy" -d "@/usr/lib/perfsonar/archive/config/ilm/install/pscheduler_default_policy.json" 2>/dev/null
 echo -e "\n[Applying policy]"
 # Apply policy to index
 curl -k -u admin:${ADMIN_PASS} -H 'Content-Type: application/json' -X POST "https://localhost:9200/_opendistro/_ism/add/pscheduler*" -d '{ "policy_id": "pscheduler_default_policy" }' 2>/dev/null
+echo -e "\n[DONE]"
+echo ""
+
+# Configure index template for pscheduler index patterns
+echo "[Create template]"
+# Update template
+curl -k -u admin:${ADMIN_PASS} -H 'Content-Type: application/json' -XPUT "https://localhost:9200/_index_template/pscheduler_default_policy" -d @/usr/lib/perfsonar/archive/config/index_template-pscheduler.json
 echo -e "\n[DONE]"
 echo ""

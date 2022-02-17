@@ -1,5 +1,13 @@
 #!/bin/bash
 
+if command -v lsb_release &> /dev/null; then 
+    OS=$(lsb_release -si)
+elif [ -f /etc/os-release ]; then
+    OS=$(awk -F= '/^NAME/{print $2}' /etc/os-release)
+else
+    OS="Unknown"
+fi
+
 PASSWORD_DIR=/etc/perfsonar/elastic
 PASSWORD_FILE=${PASSWORD_DIR}/auth_setup.out
 ADMIN_LOGIN_FILE=${PASSWORD_DIR}/elastic_login
@@ -8,6 +16,17 @@ ELASTIC_CONFIG_DIR=/etc/elasticsearch
 ELASTIC_CONFIG_FILE=${ELASTIC_CONFIG_DIR}/elasticsearch.yml
 OPENDISTRO_SECURITY_PLUGIN=/usr/share/elasticsearch/plugins/opendistro_security
 OPENDISTRO_SECURITY_FILES=${OPENDISTRO_SECURITY_PLUGIN}/securityconfig
+
+if [[ $OS == *"CentOS"* ]]; then
+    CACERTS_FILE=/etc/pki/java/cacerts
+    LOGSTASH_SYSCONFIG=/etc/sysconfig/logstash
+elif [[ $OS == *"Debian"* ]] || [[ $OS == *"Ubuntu"* ]]; then
+    CACERTS_FILE=/usr/share/elasticsearch/jdk/lib/security/cacerts
+    LOGSTASH_SYSCONFIG=/etc/default/logstash
+else
+    echo "$0 - [ERROR]: Unknown operating system"
+    exit 1
+fi
 
 # Certificates configurations
 # Clear out any config old settings
@@ -42,7 +61,8 @@ openssl x509 -req -in ${ELASTIC_CONFIG_DIR}/node.csr -CA ${ELASTIC_CONFIG_DIR}/r
 rm -f ${ELASTIC_CONFIG_DIR}/admin-key-temp.pem ${ELASTIC_CONFIG_DIR}/admin.csr ${ELASTIC_CONFIG_DIR}/node-key-temp.pem ${ELASTIC_CONFIG_DIR}/node.csr
 # Add to Java cacerts
 openssl x509 -outform der -in ${ELASTIC_CONFIG_DIR}/node.pem -out ${ELASTIC_CONFIG_DIR}/node.der
-keytool -import -alias node -keystore /etc/pki/java/cacerts -file ${ELASTIC_CONFIG_DIR}/node.der -storepass changeit -noprompt
+keytool -import -alias node -keystore ${CACERTS_FILE} -file ${ELASTIC_CONFIG_DIR}/node.der -storepass changeit -noprompt
+
 # Apply new settings
 echo "opendistro_security.ssl.transport.pemcert_filepath: node.pem" | tee -a $ELASTIC_CONFIG_FILE > /dev/null
 echo "opendistro_security.ssl.transport.pemkey_filepath: node-key.pem" | tee -a $ELASTIC_CONFIG_FILE > /dev/null
@@ -218,17 +238,16 @@ echo ""
 # 5. Configure logstash to use pscheduler_logstash user/password
 echo "[Configure logstash]"
 LOGSTASH_PASS=$(grep "pscheduler_logstash " $PASSWORD_FILE | head -n 1 | sed 's/^pscheduler_logstash //')
-echo "LOGSTASH_ELASTIC_USER=${LOGSTASH_USER}" | tee -a /etc/sysconfig/logstash > /dev/null
-sed -i 's/elastic_output_password=pscheduler_logstash/elastic_output_password='$LOGSTASH_PASS'/g' /etc/sysconfig/logstash
+echo "LOGSTASH_ELASTIC_USER=${LOGSTASH_USER}" | tee -a $LOGSTASH_SYSCONFIG > /dev/null
+sed -i 's/elastic_output_password=pscheduler_logstash/elastic_output_password='$LOGSTASH_PASS'/g' $LOGSTASH_SYSCONFIG
 echo "[DONE]"
 echo ""
 
 # 6. Fixes
 #changing the logstash port range to avoid conflict with opendistro-performance-analyzer
-sed -i 's/# http.port: 9600-9700/http.port: 9601-9700/g' /etc/logstash/logstash.yml
+sed -i 's/# api.http.port: 9600-9700/api.http.port: 9601-9700/g' /etc/logstash/logstash.yml
 
 #issue: https://github.com/opendistro-for-elasticsearch/performance-analyzer/issues/229
-echo false | sudo tee /usr/share/elasticsearch/data/batch_metrics_enabled.conf
+echo false | tee /usr/share/elasticsearch/data/batch_metrics_enabled.conf
 
-# Apply Changes
 bash ${OPENDISTRO_SECURITY_PLUGIN}/tools/securityadmin.sh -cd ${OPENDISTRO_SECURITY_PLUGIN}/securityconfig -icl -nhnv -cacert ${ELASTIC_CONFIG_DIR}/root-ca.pem -cert ${ELASTIC_CONFIG_DIR}/admin.pem -key ${ELASTIC_CONFIG_DIR}/admin-key.pem

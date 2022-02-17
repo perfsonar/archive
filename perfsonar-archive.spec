@@ -1,7 +1,7 @@
 %define install_base        /usr/lib/perfsonar
 %define archive_base        %{install_base}/archive
 %define scripts_base        %{archive_base}/perfsonar-scripts
-%define setup_base          %{archive_base}/pselastic_setup
+%define setup_base          %{archive_base}/config
 %define config_base         /etc/perfsonar/archive
 
 #Version variables set by automated scripts
@@ -39,6 +39,7 @@ A package that installs the perfSONAR Archive based on Logstash and Opendistro f
 
 %install
 make PERFSONAR-ROOTPATH=%{buildroot}/%{archive_base} PERFSONAR-CONFIGPATH=%{buildroot}/%{config_base} install
+install -D -m 0644 config/pscheduler-default-archive.json %{buildroot}/etc/pscheduler/default-archives/
 
 %clean
 rm -rf %{buildroot}
@@ -75,6 +76,10 @@ if [ "$1" = "1" ]; then
     usermod -a -G elasticsearch perfsonar
     #restart elmond
     systemctl restart elmond.service
+    #restart pscheduler-archiver to load new default-archive
+    if systemctl list-units --full -all | grep -Fq "pscheduler-archiver.service"; then
+        systemctl restart pscheduler-archiver
+    fi
 fi
 
 %preun
@@ -87,11 +92,11 @@ fi
 %defattr(0644,perfsonar,perfsonar,0755)
 %license LICENSE
 %attr(0755, perfsonar, perfsonar) %{scripts_base}/*
-%attr(0755, perfsonar, perfsonar) %{setup_base}/bin/*
-%{setup_base}/conf.d/ilm/*
-%{setup_base}/conf.d/roles/*
-%{setup_base}/conf.d/users/*
-%{setup_base}/pselastic/*
+%{setup_base}/ilm/*
+%{setup_base}/roles/*
+%{setup_base}/users/*
+%{setup_base}/index_template-pscheduler.json
+/etc/pscheduler/default-archives/http_logstash.json
 
 %changelog
 * Thu Sep 09 2021 daniel.neto@rnp.br 4.4.0-0.0.a1
