@@ -3,4 +3,4 @@ config/index_template-pscheduler.json /usr/lib/perfsonar/archive/config/
 config/ilm/* /usr/lib/perfsonar/archive/config/ilm/
 config/roles/* /usr/lib/perfsonar/archive/config/roles/
 config/users/* /usr/lib/perfsonar/archive/config/users/
-old-perfsonar-scripts/* /usr/lib/perfsonar/archive/perfsonar-scripts/
+opendistro-scripts/* /usr/lib/perfsonar/archive/perfsonar-scripts/

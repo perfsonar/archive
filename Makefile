@@ -32,7 +32,7 @@ install:
 	mkdir -p ${PERFSONAR-ROOTPATH}/config
 	mkdir -p ${PERFSONAR-CONFIGPATH}
 	mkdir -p ${DEFAULT-ARCHIVES}
-	cp -r perfsonar-scripts/* ${PERFSONAR-ROOTPATH}/perfsonar-scripts
+	cp -r opensearch-scripts/* ${PERFSONAR-ROOTPATH}/perfsonar-scripts
 	cp -r config/* ${PERFSONAR-ROOTPATH}/config
 	echo ${DEFAULT-ARCHIVES}
 	mv ${PERFSONAR-ROOTPATH}/config/pscheduler-default-archive.json ${DEFAULT-ARCHIVES}
