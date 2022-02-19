@@ -1,11 +1,12 @@
 # Makefile for perfSONAR Archive
 #
 PERFSONAR-PACKAGE=perfsonar-archive
-KIBANA-PACKAGE=kibana-archive
+DASHBOARDS-PACKAGE=perfsonar-dashboards
 PERFSONAR-ROOTPATH=/usr/lib/perfsonar/archive
-KIBANA-ROOTPATH=/usr/lib/kibana/archive
+DASHBOARDS-ROOTPATH=/usr/lib/perfsonar/dashboards
 PERFSONAR-CONFIGPATH=/etc/perfsonar/archive
-KIBANA-CONFIGPATH=/etc/kibana/archive
+DASHBOARDS-CONFIGPATH=/etc/perfsonar/dashboards
+DEFAULT-ARCHIVES=/etc/pscheduler/default-archives
 PERFSONAR_AUTO_VERSION=5.0.0
 PERFSONAR_AUTO_RELNUM=0.0.a1
 VERSION=${PERFSONAR_AUTO_VERSION}
@@ -22,21 +23,23 @@ centos7:
 dist:
 	# elasticsearch and logstash
 	git archive --format=tar --prefix=$(PERFSONAR-PACKAGE)-$(VERSION).$(RELEASE)/ HEAD | gzip >$(PERFSONAR-PACKAGE)-$(VERSION).$(RELEASE).tar.gz
-	# kibana
-	git archive --format=tar --prefix=$(KIBANA-PACKAGE)-$(VERSION).$(RELEASE)/ HEAD | gzip >$(KIBANA-PACKAGE)-$(VERSION).$(RELEASE).tar.gz
+	# dashboards
+	git archive --format=tar --prefix=$(DASHBOARDS-PACKAGE)-$(VERSION).$(RELEASE)/ HEAD | gzip >$(DASHBOARDS-PACKAGE)-$(VERSION).$(RELEASE).tar.gz
 
 install:
 	# elasticsearch and logstash
 	mkdir -p ${PERFSONAR-ROOTPATH}/perfsonar-scripts
 	mkdir -p ${PERFSONAR-ROOTPATH}/config
 	mkdir -p ${PERFSONAR-CONFIGPATH}
-	cp -r perfsonar-scripts/* ${PERFSONAR-ROOTPATH}/perfsonar-scripts
+	mkdir -p ${DEFAULT-ARCHIVES}
+	cp -r opensearch-scripts/* ${PERFSONAR-ROOTPATH}/perfsonar-scripts
 	cp -r config/* ${PERFSONAR-ROOTPATH}/config
-	rm ${PERFSONAR-ROOTPATH}/config/pscheduler-default-archive.json
-	# kibana
-	mkdir -p ${KIBANA-ROOTPATH}/kibana-scripts
-	mkdir -p ${KIBANA-CONFIGPATH}
-	cp -r kibana-scripts/* ${KIBANA-ROOTPATH}/kibana-scripts/
+	echo ${DEFAULT-ARCHIVES}
+	mv ${PERFSONAR-ROOTPATH}/config/pscheduler-default-archive.json ${DEFAULT-ARCHIVES}
+	# dashboards
+	mkdir -p ${DASHBOARDS-ROOTPATH}/dashboards-scripts
+	mkdir -p ${DASHBOARDS-CONFIGPATH}
+	cp -r dashboards-scripts/* ${DASHBOARDS-ROOTPATH}/dashboards-scripts/
 
 # Some of the jobs require the containers to be down. Detects if we have 
 # already generated a docker-compose.yml and stops containers accordingly
