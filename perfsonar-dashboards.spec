@@ -4,7 +4,7 @@
 %define config_base         /etc/perfsonar/dashboards
 
 #Version variables set by automated scripts
-%define perfsonar_auto_version 4.4.0
+%define perfsonar_auto_version 5.0.0
 %define perfsonar_auto_relnum 0.0.a1
 
 Name:			perfsonar-dashboards
@@ -67,5 +67,5 @@ fi
 %attr(0755, perfsonar, perfsonar) %{scripts_base}/*
 
 %changelog
-* Sun Mar 21 2021 andy@es.net 4.4.0-0.0.a1
+* Thu Feb 15 2022 luan.rios@rnp.br 5.0.0-0.0.a1
 - Initial spec file created

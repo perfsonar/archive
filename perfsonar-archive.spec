@@ -39,7 +39,7 @@ A package that installs the perfSONAR Archive based on Logstash and Opensearch.
 
 %install
 make PERFSONAR-ROOTPATH=%{buildroot}/%{archive_base} PERFSONAR-CONFIGPATH=%{buildroot}/%{config_base} DEFAULT-ARCHIVES=%{buildroot}/etc/pscheduler/default-archives install
-#install -D -m 0644 config/pscheduler-default-archive.json %{buildroot}/etc/pscheduler/default-archives/
+install -D -m 0644 config/pscheduler-default-archive.json %{buildroot}/etc/pscheduler/default-archives/
 
 %clean
 rm -rf %{buildroot}
@@ -99,7 +99,7 @@ fi
 /etc/pscheduler/default-archives/pscheduler-default-archive.json
 
 %changelog
-* Thu Feb 15 2022 luan.rios@rnp.br 4.4.0-0.0.a1
+* Thu Feb 15 2022 luan.rios@rnp.br 5.0.0-0.0.a1
 - Update to use with opensearch
 
 * Thu Sep 09 2021 daniel.neto@rnp.br 4.4.0-0.0.a1
