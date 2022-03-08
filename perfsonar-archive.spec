@@ -39,7 +39,6 @@ A package that installs the perfSONAR Archive based on Logstash and Opensearch.
 
 %install
 make PERFSONAR-ROOTPATH=%{buildroot}/%{archive_base} PERFSONAR-CONFIGPATH=%{buildroot}/%{config_base} DEFAULT-ARCHIVES=%{buildroot}/etc/pscheduler/default-archives install
-install -D -m 0644 config/pscheduler-default-archive.json %{buildroot}/etc/pscheduler/default-archives/
 
 %clean
 rm -rf %{buildroot}
@@ -76,10 +75,6 @@ if [ "$1" = "1" ]; then
     usermod -a -G opensearch perfsonar
     #restart elmond
     systemctl restart elmond.service
-    #restart pscheduler-archiver to load new default-archive
-    if systemctl list-units --full -all | grep -Fq "pscheduler-archiver.service"; then
-        systemctl restart pscheduler-archiver
-    fi
 fi
 
 %preun
@@ -96,7 +91,6 @@ fi
 %{setup_base}/roles/*
 %{setup_base}/users/*
 %{setup_base}/index_template-pscheduler.json
-/etc/pscheduler/default-archives/pscheduler-default-archive.json
 
 %changelog
 * Thu Feb 15 2022 luan.rios@rnp.br 5.0.0-0.0.a1

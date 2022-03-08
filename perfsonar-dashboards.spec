@@ -17,7 +17,7 @@ URL:			http://www.perfsonar.net
 Source0:		perfsonar-dashboards-%{version}.%{perfsonar_auto_relnum}.tar.gz
 BuildRoot:		%{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 BuildArch:		noarch
-Requires:       	opensearch-dashboards
+Requires:       opensearch-dashboards
 
 %description
 A package that installs and configure Opensearch Dashboards.
