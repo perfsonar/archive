@@ -6,7 +6,6 @@ PERFSONAR-ROOTPATH=/usr/lib/perfsonar/archive
 DASHBOARDS-ROOTPATH=/usr/lib/perfsonar/dashboards
 PERFSONAR-CONFIGPATH=/etc/perfsonar/archive
 DASHBOARDS-CONFIGPATH=/etc/perfsonar/dashboards
-DEFAULT-ARCHIVES=/etc/pscheduler/default-archives
 PERFSONAR_AUTO_VERSION=5.0.0
 PERFSONAR_AUTO_RELNUM=0.0.a1
 VERSION=${PERFSONAR_AUTO_VERSION}
@@ -31,11 +30,8 @@ install:
 	mkdir -p ${PERFSONAR-ROOTPATH}/perfsonar-scripts
 	mkdir -p ${PERFSONAR-ROOTPATH}/config
 	mkdir -p ${PERFSONAR-CONFIGPATH}
-	mkdir -p ${DEFAULT-ARCHIVES}
 	cp -r opensearch-scripts/* ${PERFSONAR-ROOTPATH}/perfsonar-scripts
 	cp -r config/* ${PERFSONAR-ROOTPATH}/config
-	echo ${DEFAULT-ARCHIVES}
-	mv ${PERFSONAR-ROOTPATH}/config/pscheduler-default-archive.json ${DEFAULT-ARCHIVES}
 	# dashboards
 	mkdir -p ${DASHBOARDS-ROOTPATH}/dashboards-scripts
 	mkdir -p ${DASHBOARDS-CONFIGPATH}

@@ -38,7 +38,7 @@ A package that installs the perfSONAR Archive based on Logstash and Opensearch.
 %build
 
 %install
-make PERFSONAR-ROOTPATH=%{buildroot}/%{archive_base} PERFSONAR-CONFIGPATH=%{buildroot}/%{config_base} DEFAULT-ARCHIVES=%{buildroot}/etc/pscheduler/default-archives install
+make PERFSONAR-ROOTPATH=%{buildroot}/%{archive_base} PERFSONAR-CONFIGPATH=%{buildroot}/%{config_base} install
 
 %clean
 rm -rf %{buildroot}
