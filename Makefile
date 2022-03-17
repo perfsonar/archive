@@ -6,6 +6,7 @@ PERFSONAR-ROOTPATH=/usr/lib/perfsonar/archive
 DASHBOARDS-ROOTPATH=/usr/lib/perfsonar/dashboards
 PERFSONAR-CONFIGPATH=/etc/perfsonar/archive
 DASHBOARDS-CONFIGPATH=/etc/perfsonar/dashboards
+HTTPD-CONFIGPATH=/etc/httpd/conf.d
 PERFSONAR_AUTO_VERSION=5.0.0
 PERFSONAR_AUTO_RELNUM=0.0.a1
 VERSION=${PERFSONAR_AUTO_VERSION}
@@ -36,6 +37,7 @@ install:
 	mkdir -p ${DASHBOARDS-ROOTPATH}/dashboards-scripts
 	mkdir -p ${DASHBOARDS-CONFIGPATH}
 	cp -r dashboards-scripts/* ${DASHBOARDS-ROOTPATH}/dashboards-scripts/
+	mv ${PERFSONAR-ROOTPATH}/config/apache/* ${HTTPD-CONFIGPATH}/
 
 # Some of the jobs require the containers to be down. Detects if we have 
 # already generated a docker-compose.yml and stops containers accordingly
