@@ -36,6 +36,7 @@ install:
 	# dashboards
 	mkdir -p ${DASHBOARDS-ROOTPATH}/dashboards-scripts
 	mkdir -p ${DASHBOARDS-CONFIGPATH}
+	mkdir -p ${HTTPD-CONFIGPATH}
 	cp -r dashboards-scripts/* ${DASHBOARDS-ROOTPATH}/dashboards-scripts/
 	mv ${PERFSONAR-ROOTPATH}/config/apache/* ${HTTPD-CONFIGPATH}/
 
