@@ -2,6 +2,7 @@
 %define dashboards_base     %{install_base}/dashboards
 %define scripts_base        %{dashboards_base}/dashboards-scripts
 %define config_base         /etc/perfsonar/dashboards
+%define httpd_config_base   /etc/httpd/conf.d
 
 #Version variables set by automated scripts
 %define perfsonar_auto_version 5.0.0
@@ -18,6 +19,8 @@ Source0:		perfsonar-dashboards-%{version}.%{perfsonar_auto_relnum}.tar.gz
 BuildRoot:		%{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 BuildArch:		noarch
 Requires:       opensearch-dashboards
+Requires:       httpd
+Requires:       mod_ssl
 
 %description
 A package that installs and configure Opensearch Dashboards.
@@ -32,7 +35,7 @@ A package that installs and configure Opensearch Dashboards.
 %build
 
 %install
-make DASHBOARDS-ROOTPATH=%{buildroot}/%{dashboards_base} DASHBOARDS-CONFIGPATH=%{buildroot}/%{config_base} install
+make DASHBOARDS-ROOTPATH=%{buildroot}/%{dashboards_base} DASHBOARDS-CONFIGPATH=%{buildroot}/%{config_base} HTTPD-CONFIGPATH=%{buildroot}/%{httpd_config_base} install
 
 %clean
 rm -rf %{buildroot}
@@ -53,6 +56,9 @@ if [ "$1" = "1" ]; then
     systemctl start opensearch-dashboards.service
     #run opensearch dashboards post startup script
     bash %{scripts_base}/dashboards_secure_pos.sh
+    #Enable and restart apache for reverse proxy
+    systemctl enable httpd
+    systemctl restart httpd
 fi
 
 %preun
@@ -65,6 +71,7 @@ fi
 %defattr(0644,perfsonar,perfsonar,0755)
 %license LICENSE
 %attr(0755, perfsonar, perfsonar) %{scripts_base}/*
+%attr(0644, perfsonar, perfsonar) %{httpd_config_base}/apache-opensearchdash.conf
 
 %changelog
 * Thu Feb 15 2022 luan.rios@rnp.br 5.0.0-0.0.a1
