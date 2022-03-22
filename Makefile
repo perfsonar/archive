@@ -21,16 +21,15 @@ centos7:
 	docker cp ${PERFSONAR-PACKAGE}_centos7_1:/root/rpmbuild/RPMS/noarch ./artifacts/centos7/rpms
 
 dist:
-	# elasticsearch and logstash
+	# opensearch and logstash
 	git archive --format=tar --prefix=$(PERFSONAR-PACKAGE)-$(VERSION).$(RELEASE)/ HEAD | gzip >$(PERFSONAR-PACKAGE)-$(VERSION).$(RELEASE).tar.gz
 	# dashboards
 	git archive --format=tar --prefix=$(DASHBOARDS-PACKAGE)-$(VERSION).$(RELEASE)/ HEAD | gzip >$(DASHBOARDS-PACKAGE)-$(VERSION).$(RELEASE).tar.gz
 
 install:
-	# elasticsearch and logstash
+	# opensearch and logstash
 	mkdir -p ${PERFSONAR-ROOTPATH}/perfsonar-scripts
 	mkdir -p ${PERFSONAR-ROOTPATH}/config
-	mkdir -p ${PERFSONAR-CONFIGPATH}
 	cp -r opensearch-scripts/* ${PERFSONAR-ROOTPATH}/perfsonar-scripts
 	cp -r config/* ${PERFSONAR-ROOTPATH}/config
 	# dashboards

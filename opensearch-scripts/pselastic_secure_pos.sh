@@ -6,7 +6,7 @@
 # Apply Pre Script Changes
 #bash ${OPENSEARCH_SECURITY_PLUGIN}/tools/securityadmin.sh -cd ${OPENSEARCH_SECURITY_PLUGIN}/securityconfig -icl -nhnv -cacert ${ELASTIC_CONFIG_DIR}/root-ca.pem -cert ${ELASTIC_CONFIG_DIR}/admin.pem -key ${ELASTIC_CONFIG_DIR}/admin-key.pem
 
-PASSWORD_FILE=/etc/perfsonar/elastic/auth_setup.out
+PASSWORD_FILE=/etc/perfsonar/opensearch/auth_setup.out
 # Get password for admin user
 ADMIN_PASS=$(grep "admin " $PASSWORD_FILE | head -n 1 | sed 's/^admin //')
 if [ $? -ne 0 ]; then
@@ -17,7 +17,7 @@ elif [ -z "$ADMIN_PASS" ]; then
     exit 1
 fi
 
-echo "Waiting elasticsearch API to start..."
+echo "Waiting for opensearch API to start..."
 api_status=$(curl -s -o /dev/null -w "%{http_code}" -u admin:${ADMIN_PASS} -k https://localhost:9200/_cluster/health)
 i=0
 while [[ $api_status -ne 200 ]]

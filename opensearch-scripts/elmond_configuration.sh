@@ -1,4 +1,4 @@
-ELASTIC_PASSWORD_FILE=/etc/perfsonar/elastic/auth_setup.out
+ELASTIC_PASSWORD_FILE=/etc/perfsonar/opensearch/auth_setup.out
 ELMOND_CONFIG_FILE=/etc/perfsonar/elmond/elmond.json
 TEMP_DIR=/tmp
 

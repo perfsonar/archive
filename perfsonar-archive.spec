@@ -49,7 +49,7 @@ mkdir -p %{config_base}
 
 export JAVA_HOME=/usr/share/opensearch/jdk
 
-#Restart/enable elasticsearch and logstash
+#Restart/enable opensearch and logstash
 %systemd_post opensearch.service
 %systemd_post logstash.service
 if [ "$1" = "1" ]; then
@@ -60,15 +60,15 @@ if [ "$1" = "1" ]; then
     #fix directory permissions
     chmod g+ws /etc/opensearch/
     chown -R root:opensearch /etc/opensearch/
-    #run elasticsearch pre startup script
+    #run opensearch pre startup script
     bash %{scripts_base}/pselastic_secure_pre.sh
-    #start elasticsearch
+    #start opensearch
     systemctl start opensearch.service
     #restart logstash
     systemctl restart logstash.service
     #restart the service to fix port conflict
     systemctl restart opensearch-performance-analyzer.service
-    #run elasticsearch post startup script
+    #run opensearch post startup script
     bash %{scripts_base}/pselastic_secure_pos.sh
     #run elmond configuration script
     bash %{scripts_base}/elmond_configuration.sh
