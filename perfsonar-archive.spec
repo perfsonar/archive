@@ -3,6 +3,7 @@
 %define scripts_base        %{archive_base}/perfsonar-scripts
 %define setup_base          %{archive_base}/config
 %define config_base         /etc/perfsonar/archive
+%define httpd_config_base   /etc/httpd/conf.d
 
 #Version variables set by automated scripts
 %define perfsonar_auto_version 5.0.0
@@ -24,6 +25,8 @@ Requires:       openssl
 Requires:       jq
 Requires:       perfsonar-logstash
 Requires:       perfsonar-elmond
+Requires:       httpd
+Requires:       mod_ssl
 
 %description
 A package that installs the perfSONAR Archive based on Logstash and Opensearch.
@@ -38,7 +41,7 @@ A package that installs the perfSONAR Archive based on Logstash and Opensearch.
 %build
 
 %install
-make PERFSONAR-ROOTPATH=%{buildroot}/%{archive_base} PERFSONAR-CONFIGPATH=%{buildroot}/%{config_base} install
+make PERFSONAR-ROOTPATH=%{buildroot}/%{archive_base} PERFSONAR-CONFIGPATH=%{buildroot}/%{config_base} HTTPD-CONFIGPATH=%{buildroot}/%{httpd_config_base} install
 
 %clean
 rm -rf %{buildroot}
@@ -75,6 +78,9 @@ if [ "$1" = "1" ]; then
     usermod -a -G opensearch perfsonar
     #restart elmond
     systemctl restart elmond.service
+    #Enable and restart apache for reverse proxy
+    systemctl enable httpd
+    systemctl restart httpd
 fi
 
 %preun
@@ -91,6 +97,7 @@ fi
 %{setup_base}/roles/*
 %{setup_base}/users/*
 %{setup_base}/index_template-pscheduler.json
+%attr(0644, perfsonar, perfsonar) %{httpd_config_base}/apache-opensearch.conf
 
 %changelog
 * Thu Feb 15 2022 luan.rios@rnp.br 5.0.0-0.0.a1
