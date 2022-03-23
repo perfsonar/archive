@@ -4,8 +4,6 @@ PERFSONAR-PACKAGE=perfsonar-archive
 DASHBOARDS-PACKAGE=perfsonar-dashboards
 PERFSONAR-ROOTPATH=/usr/lib/perfsonar/archive
 DASHBOARDS-ROOTPATH=/usr/lib/perfsonar/dashboards
-PERFSONAR-CONFIGPATH=/etc/perfsonar/archive
-DASHBOARDS-CONFIGPATH=/etc/perfsonar/dashboards
 HTTPD-CONFIGPATH=/etc/httpd/conf.d
 PERFSONAR_AUTO_VERSION=5.0.0
 PERFSONAR_AUTO_RELNUM=0.0.a1
@@ -26,18 +24,22 @@ dist:
 	# dashboards
 	git archive --format=tar --prefix=$(DASHBOARDS-PACKAGE)-$(VERSION).$(RELEASE)/ HEAD | gzip >$(DASHBOARDS-PACKAGE)-$(VERSION).$(RELEASE).tar.gz
 
-install:
+install_arch:
 	# opensearch and logstash
 	mkdir -p ${PERFSONAR-ROOTPATH}/perfsonar-scripts
 	mkdir -p ${PERFSONAR-ROOTPATH}/config
+	mkdir -p ${HTTPD-CONFIGPATH}
 	cp -r opensearch-scripts/* ${PERFSONAR-ROOTPATH}/perfsonar-scripts
 	cp -r config/* ${PERFSONAR-ROOTPATH}/config
+	mv ${PERFSONAR-ROOTPATH}/config/apache/archive/* ${HTTPD-CONFIGPATH}/
+	rm -rf ${PERFSONAR-ROOTPATH}/config/apache
+
+install_dash:
 	# dashboards
 	mkdir -p ${DASHBOARDS-ROOTPATH}/dashboards-scripts
-	mkdir -p ${DASHBOARDS-CONFIGPATH}
 	mkdir -p ${HTTPD-CONFIGPATH}
 	cp -r dashboards-scripts/* ${DASHBOARDS-ROOTPATH}/dashboards-scripts/
-	mv ${PERFSONAR-ROOTPATH}/config/apache/* ${HTTPD-CONFIGPATH}/
+	cp -r config/apache/dashboards/* ${HTTPD-CONFIGPATH}/
 
 # Some of the jobs require the containers to be down. Detects if we have 
 # already generated a docker-compose.yml and stops containers accordingly

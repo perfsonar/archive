@@ -1,7 +1,6 @@
 %define install_base        /usr/lib/perfsonar
 %define dashboards_base     %{install_base}/dashboards
 %define scripts_base        %{dashboards_base}/dashboards-scripts
-%define config_base         /etc/perfsonar/dashboards
 %define httpd_config_base   /etc/httpd/conf.d
 
 #Version variables set by automated scripts
@@ -35,15 +34,12 @@ A package that installs and configure Opensearch Dashboards.
 %build
 
 %install
-make DASHBOARDS-ROOTPATH=%{buildroot}/%{dashboards_base} DASHBOARDS-CONFIGPATH=%{buildroot}/%{config_base} HTTPD-CONFIGPATH=%{buildroot}/%{httpd_config_base} install
+make DASHBOARDS-ROOTPATH=%{buildroot}/%{dashboards_base} HTTPD-CONFIGPATH=%{buildroot}/%{httpd_config_base} install_dash
 
 %clean
 rm -rf %{buildroot}
 
 %post
-#create config directory
-mkdir -p %{config_base}
-
 #Restart/enable opensearch-dashboards
 %systemd_post opensearch-dashboards.service
 if [ "$1" = "1" ]; then

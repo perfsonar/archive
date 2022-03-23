@@ -2,7 +2,6 @@
 %define archive_base        %{install_base}/archive
 %define scripts_base        %{archive_base}/perfsonar-scripts
 %define setup_base          %{archive_base}/config
-%define config_base         /etc/perfsonar/archive
 %define httpd_config_base   /etc/httpd/conf.d
 
 #Version variables set by automated scripts
@@ -41,15 +40,12 @@ A package that installs the perfSONAR Archive based on Logstash and Opensearch.
 %build
 
 %install
-make PERFSONAR-ROOTPATH=%{buildroot}/%{archive_base} PERFSONAR-CONFIGPATH=%{buildroot}/%{config_base} HTTPD-CONFIGPATH=%{buildroot}/%{httpd_config_base} install
+make PERFSONAR-ROOTPATH=%{buildroot}/%{archive_base} HTTPD-CONFIGPATH=%{buildroot}/%{httpd_config_base} install_arch
 
 %clean
 rm -rf %{buildroot}
 
 %post
-#create config directory
-mkdir -p %{config_base}
-
 export JAVA_HOME=/usr/share/opensearch/jdk
 
 #Restart/enable opensearch and logstash
