@@ -8,9 +8,9 @@ else
     OS="Unknown"
 fi
 
-PASSWORD_DIR=/etc/perfsonar/elastic
+PASSWORD_DIR=/etc/perfsonar/opensearch
 PASSWORD_FILE=${PASSWORD_DIR}/auth_setup.out
-ADMIN_LOGIN_FILE=${PASSWORD_DIR}/elastic_login
+ADMIN_LOGIN_FILE=${PASSWORD_DIR}/opensearch_login
 LOGSTASH_USER=pscheduler_logstash
 ELASTIC_CONFIG_DIR=/etc/opensearch
 ELASTIC_CONFIG_FILE=${ELASTIC_CONFIG_DIR}/opensearch.yml
@@ -21,7 +21,7 @@ if [[ $OS == *"CentOS"* ]]; then
     CACERTS_FILE=/etc/pki/java/cacerts
     LOGSTASH_SYSCONFIG=/etc/sysconfig/logstash
 elif [[ $OS == *"Debian"* ]] || [[ $OS == *"Ubuntu"* ]]; then
-    CACERTS_FILE=/usr/share/elasticsearch/jdk/lib/security/cacerts
+    CACERTS_FILE=/usr/share/opensearch/jdk/lib/security/cacerts
     LOGSTASH_SYSCONFIG=/etc/default/logstash
 else
     echo "$0 - [ERROR]: Unknown operating system"
@@ -78,7 +78,7 @@ echo "  - CN=localhost,OU=node,O=node,L=test,C=br" | tee -a $ELASTIC_CONFIG_FILE
 chmod +x ${OPENSEARCH_SECURITY_PLUGIN}/tools/hash.sh
 
 # Generate default users random passwords, write them to tmp file and, if it works, move to permanent file
-echo "[Generating elasticsearch passwords]"
+echo "[Generating opensearch passwords]"
 if [ -e "$PASSWORD_FILE" ]; then
     echo "$PASSWORD_FILE already exists, so not generating new passwords"
 else

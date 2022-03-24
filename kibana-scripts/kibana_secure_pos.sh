@@ -1,6 +1,6 @@
 #!/bin/bash
 
-ADMIN_PASS=$(grep "admin " /etc/perfsonar/elastic/auth_setup.out | head -n 1 | sed 's/^admin //')
+ADMIN_PASS=$(grep "admin " /etc/perfsonar/opensearch/auth_setup.out | head -n 1 | sed 's/^admin //')
 KIBANA_VERSION=$(/usr/share/kibana/bin/kibana --config /etc/kibana/kibana.yml --allow-root --version)
 
 # Check if the API is running

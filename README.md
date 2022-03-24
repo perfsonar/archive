@@ -21,9 +21,9 @@ yum install -y /root/rpmbuild/RPMS/noarch/kibana-archive*.rpm
 ###verify services
 systemctl status kibana
 systemctl status logstash
-systemctl status elasticsearch
+systemctl status opensearch
 
-tail -f /var/log/elasticsearch/elasticsearch.log
+tail -f /var/log/opensearch/opensearch.log
 tail -f /var/log/logstash/logstash-plain.log
 
 ##stop container

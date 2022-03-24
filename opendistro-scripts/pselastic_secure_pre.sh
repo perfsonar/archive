@@ -8,9 +8,9 @@ else
     OS="Unknown"
 fi
 
-PASSWORD_DIR=/etc/perfsonar/elastic
+PASSWORD_DIR=/etc/perfsonar/opensearch
 PASSWORD_FILE=${PASSWORD_DIR}/auth_setup.out
-ADMIN_LOGIN_FILE=${PASSWORD_DIR}/elastic_login
+ADMIN_LOGIN_FILE=${PASSWORD_DIR}/opensearch_login
 LOGSTASH_USER=pscheduler_logstash
 ELASTIC_CONFIG_DIR=/etc/elasticsearch
 ELASTIC_CONFIG_FILE=${ELASTIC_CONFIG_DIR}/elasticsearch.yml

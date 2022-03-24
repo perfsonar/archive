@@ -2,7 +2,7 @@
 %define archive_base        %{install_base}/archive
 %define scripts_base        %{archive_base}/perfsonar-scripts
 %define setup_base          %{archive_base}/config
-%define config_base         /etc/perfsonar/archive
+%define httpd_config_base   /etc/httpd/conf.d
 
 #Version variables set by automated scripts
 %define perfsonar_auto_version 5.0.0
@@ -24,6 +24,8 @@ Requires:       openssl
 Requires:       jq
 Requires:       perfsonar-logstash
 Requires:       perfsonar-elmond
+Requires:       httpd
+Requires:       mod_ssl
 
 %description
 A package that installs the perfSONAR Archive based on Logstash and Opensearch.
@@ -38,18 +40,15 @@ A package that installs the perfSONAR Archive based on Logstash and Opensearch.
 %build
 
 %install
-make PERFSONAR-ROOTPATH=%{buildroot}/%{archive_base} PERFSONAR-CONFIGPATH=%{buildroot}/%{config_base} install
+make PERFSONAR-ROOTPATH=%{buildroot}/%{archive_base} HTTPD-CONFIGPATH=%{buildroot}/%{httpd_config_base} install_arch
 
 %clean
 rm -rf %{buildroot}
 
 %post
-#create config directory
-mkdir -p %{config_base}
-
 export JAVA_HOME=/usr/share/opensearch/jdk
 
-#Restart/enable elasticsearch and logstash
+#Restart/enable opensearch and logstash
 %systemd_post opensearch.service
 %systemd_post logstash.service
 if [ "$1" = "1" ]; then
@@ -60,21 +59,24 @@ if [ "$1" = "1" ]; then
     #fix directory permissions
     chmod g+ws /etc/opensearch/
     chown -R root:opensearch /etc/opensearch/
-    #run elasticsearch pre startup script
+    #run opensearch pre startup script
     bash %{scripts_base}/pselastic_secure_pre.sh
-    #start elasticsearch
+    #start opensearch
     systemctl start opensearch.service
     #restart logstash
     systemctl restart logstash.service
     #restart the service to fix port conflict
     systemctl restart opensearch-performance-analyzer.service
-    #run elasticsearch post startup script
+    #run opensearch post startup script
     bash %{scripts_base}/pselastic_secure_pos.sh
     #run elmond configuration script
     bash %{scripts_base}/elmond_configuration.sh
     usermod -a -G opensearch perfsonar
     #restart elmond
     systemctl restart elmond.service
+    #Enable and restart apache for reverse proxy
+    systemctl enable httpd
+    systemctl restart httpd
 fi
 
 %preun
@@ -91,6 +93,7 @@ fi
 %{setup_base}/roles/*
 %{setup_base}/users/*
 %{setup_base}/index_template-pscheduler.json
+%attr(0644, perfsonar, perfsonar) %{httpd_config_base}/apache-opensearch.conf
 
 %changelog
 * Thu Feb 15 2022 luan.rios@rnp.br 5.0.0-0.0.a1
