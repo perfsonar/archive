@@ -11,6 +11,9 @@ fi
 PASSWORD_DIR=/etc/perfsonar/opensearch
 PASSWORD_FILE=${PASSWORD_DIR}/auth_setup.out
 ADMIN_LOGIN_FILE=${PASSWORD_DIR}/opensearch_login
+PROXY_AUTH_JSON=/etc/perfsonar/logstash/proxy_auth.json
+LOGSTASH_PROXY_LOGIN_FILE=${PASSWORD_DIR}/logstash_login
+LOGSTASH_PROXY_USER=perfsonar
 LOGSTASH_USER=pscheduler_logstash
 ELASTIC_CONFIG_DIR=/etc/opensearch
 ELASTIC_CONFIG_FILE=${ELASTIC_CONFIG_DIR}/opensearch.yml
@@ -116,6 +119,15 @@ echo "admin $ADMIN_PASS" | tee -a $ADMIN_LOGIN_FILE > /dev/null
 chmod 600 $ADMIN_LOGIN_FILE
 echo "[DONE]"
 echo ""
+
+# Create perfsonar usar for logstash auth in proxy layer
+if [ -f "$LOGSTASH_PROXY_LOGIN_FILE" ] ; then
+    rm "$LOGSTASH_PROXY_LOGIN_FILE"
+fi
+PROXY_PASS=$(tr -dc A-Za-z0-9 </dev/urandom | head -c 20)
+htpasswd -bc $LOGSTASH_PROXY_LOGIN_FILE $LOGSTASH_PROXY_USER $PROXY_PASS
+LOGIN_BASE64=$(echo -n "$LOGSTASH_PROXY_USER:$PROXY_PASS" | base64 -i)
+echo "\"Authorization\":\"Basic $LOGIN_BASE64\"" | tee -a $PROXY_AUTH_JSON > /dev/null
 
 # new users: pscheduler_logstash, pscheduler_reader and pscheduler_writer
 # 1. Create users, generate passwords and save them to file 
