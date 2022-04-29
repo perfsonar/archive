@@ -55,6 +55,8 @@ export JAVA_HOME=/usr/share/opensearch/jdk
 %systemd_post opensearch.service
 %systemd_post logstash.service
 if [ "$1" = "1" ]; then
+    #5.0 upgrade- clean out any old cassandra processes from esmond
+    pkill -9 -f cassandra || :
     #if new install, then enable
     systemctl daemon-reload
     systemctl enable opensearch.service
