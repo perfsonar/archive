@@ -26,9 +26,6 @@ Requires:       perfsonar-logstash
 Requires:       perfsonar-elmond
 Requires:       httpd
 Requires:       mod_ssl
-Obsoletes:      esmond
-Obsoletes:      perfsonar-toolkit-esmond-utils
-Obsoletes:      cassandra20
 
 %description
 A package that installs the perfSONAR Archive based on Logstash and Opensearch.
@@ -55,8 +52,12 @@ export JAVA_HOME=/usr/share/opensearch/jdk
 %systemd_post opensearch.service
 %systemd_post logstash.service
 if [ "$1" = "1" ]; then
-    #5.0 upgrade- clean out any old cassandra processes from esmond
-    pkill -9 -f cassandra || :
+    #####
+    # 5.0 upgrade - clean out esmond. Don't obsolete so people can still get at data
+    (systemctl stop --quiet cassandra &> /dev/null) || :
+    (systemctl disable --quiet cassandra &> /dev/null) || :
+    rm -f /etc/httpd/conf.d/apache-esmond.conf
+    ######
     #if new install, then enable
     systemctl daemon-reload
     systemctl enable opensearch.service
