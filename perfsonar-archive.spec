@@ -24,6 +24,7 @@ Requires:       openssl
 Requires:       jq
 Requires:       perfsonar-logstash
 Requires:       perfsonar-elmond
+Obsoletes:      esmond
 
 %description
 A package that installs the perfSONAR Archive based on Logstash and Opensearch.
