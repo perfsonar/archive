@@ -1,12 +1,13 @@
 #!/bin/bash
 
-#OPENSEARCH_SECURITY_PLUGIN=/usr/share/opensearch/plugins/opendistro_security
-#ELASTIC_CONFIG_DIR=/etc/opensearch
-
-# Apply Pre Script Changes
-#bash ${OPENSEARCH_SECURITY_PLUGIN}/tools/securityadmin.sh -cd ${OPENSEARCH_SECURITY_PLUGIN}/securityconfig -icl -nhnv -cacert ${ELASTIC_CONFIG_DIR}/root-ca.pem -cert ${ELASTIC_CONFIG_DIR}/admin.pem -key ${ELASTIC_CONFIG_DIR}/admin-key.pem
-
+OPENSEARCH_CONFIG_DIR=/etc/opensearch
+OPENSEARCH_SECURITY_PLUGIN=/usr/share/opensearch/plugins/opensearch-security
+OPENSEARCH_SECURITY_CONFIG=${OPENSEARCH_CONFIG_DIR}/opensearch-security
 PASSWORD_FILE=/etc/perfsonar/opensearch/auth_setup.out
+
+# Run securityadmin to enact permission changes
+bash ${OPENSEARCH_SECURITY_PLUGIN}/tools/securityadmin.sh -cd ${OPENSEARCH_SECURITY_CONFIG} -icl -nhnv -cacert ${OPENSEARCH_CONFIG_DIR}/root-ca.pem -cert ${OPENSEARCH_CONFIG_DIR}/admin.pem -key ${OPENSEARCH_CONFIG_DIR}/admin-key.pem
+
 # Get password for admin user
 ADMIN_PASS=$(grep "admin " $PASSWORD_FILE | head -n 1 | sed 's/^admin //')
 if [ $? -ne 0 ]; then
