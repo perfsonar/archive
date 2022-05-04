@@ -100,7 +100,8 @@ fi
 %{setup_base}/users/*
 %{setup_base}/index_template-pscheduler.json
 %attr(0644, perfsonar, perfsonar) %{httpd_config_base}/apache-opensearch.conf
-%attr(0644, perfsonar, perfsonar) %{httpd_config_base}/apache-logstash.conf
+# Set to config so users can update auth settings
+%config(noreplace) %attr(0644, perfsonar, perfsonar) %{httpd_config_base}/apache-logstash.conf
 
 %changelog
 * Thu Feb 15 2022 luan.rios@rnp.br 5.0.0-0.0.a1
