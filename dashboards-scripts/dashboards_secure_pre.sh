@@ -4,7 +4,7 @@
 echo "[Configure Opensearch-Dashboards]"
 OPENSEARCHDASH_CONFIG=/etc/opensearch-dashboards/opensearch_dashboards.yml
 DASHBOARDS_PASS=$(grep "kibanaserver " /etc/perfsonar/opensearch/auth_setup.out | head -n 1 | sed 's/^kibanaserver //')
-sed -i "s/opensearch.password: \"kibanaserver\"/opensearch.password: \"${DASHBOARDS_PASS}\"/g" $OPENSEARCHDASH_CONFIG
+sed -i "s/opensearch.password: kibanaserver/opensearch.password: ${DASHBOARDS_PASS}/g" $OPENSEARCHDASH_CONFIG
 # Clear and then set reverse proxy settings
 sed -i '/^server.basePath:.*/d' $OPENSEARCHDASH_CONFIG
 sed -i '/^server.host:.*/d' $OPENSEARCHDASH_CONFIG
