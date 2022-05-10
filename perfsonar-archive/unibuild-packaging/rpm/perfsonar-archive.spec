@@ -15,7 +15,7 @@ Summary:		perfSONAR Measurement Archive
 License:		ASL 2.0
 Group:			Development/Libraries
 URL:			http://www.perfsonar.net
-Source0:		perfsonar-archive-%{version}.%{perfsonar_auto_relnum}.tar.gz
+Source0:		perfsonar-archive-%{version}.tar.gz
 BuildRoot:		%{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 BuildArch:		noarch
 Requires:		opensearch
@@ -35,12 +35,12 @@ A package that installs the perfSONAR Archive based on Logstash and Opensearch.
 /usr/sbin/useradd -g perfsonar -r -s /sbin/nologin -c "perfSONAR User" -d /tmp perfsonar 2> /dev/null || :
 
 %prep
-%setup -q -n perfsonar-archive-%{version}.%{perfsonar_auto_relnum}
+%setup -q -n perfsonar-archive-%{version}
 
 %build
 
 %install
-make PERFSONAR-ROOTPATH=%{buildroot}/%{archive_base} HTTPD-CONFIGPATH=%{buildroot}/%{httpd_config_base} install_arch
+make PERFSONAR-ROOTPATH=%{buildroot}/%{archive_base} HTTPD-CONFIGPATH=%{buildroot}/%{httpd_config_base} install
 
 %clean
 rm -rf %{buildroot}
@@ -104,7 +104,7 @@ fi
 %config(noreplace) %attr(0644, perfsonar, perfsonar) %{httpd_config_base}/apache-logstash.conf
 
 %changelog
-* Thu Feb 15 2022 luan.rios@rnp.br 5.0.0-0.0.a1
+* Tue Feb 15 2022 luan.rios@rnp.br 5.0.0-0.0.a1
 - Update to use with opensearch
 
 * Thu Sep 09 2021 daniel.neto@rnp.br 4.4.0-0.0.a1

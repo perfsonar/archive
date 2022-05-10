@@ -7,3 +7,6 @@
 .env
 perfsonar-archive-*.tar.gz
 artifacts/
+unibuild-log
+unibuild-work/
+unibuild-repo/

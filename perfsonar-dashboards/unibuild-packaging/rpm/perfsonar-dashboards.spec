@@ -14,7 +14,7 @@ Summary:		Install and configure Opensearch Dashboards
 License:		ASL 2.0
 Group:			Development/Libraries
 URL:			http://www.perfsonar.net
-Source0:		perfsonar-dashboards-%{version}.%{perfsonar_auto_relnum}.tar.gz
+Source0:		perfsonar-dashboards-%{version}.tar.gz
 BuildRoot:		%{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 BuildArch:		noarch
 Requires:       opensearch-dashboards
@@ -29,12 +29,12 @@ A package that installs and configure Opensearch Dashboards.
 /usr/sbin/useradd -g perfsonar -r -s /sbin/nologin -c "perfSONAR User" -d /tmp perfsonar 2> /dev/null || :
 
 %prep
-%setup -q -n perfsonar-dashboards-%{version}.%{perfsonar_auto_relnum}
+%setup -q -n perfsonar-dashboards-%{version}
 
 %build
 
 %install
-make DASHBOARDS-ROOTPATH=%{buildroot}/%{dashboards_base} HTTPD-CONFIGPATH=%{buildroot}/%{httpd_config_base} install_dash
+make DASHBOARDS-ROOTPATH=%{buildroot}/%{dashboards_base} HTTPD-CONFIGPATH=%{buildroot}/%{httpd_config_base} install
 
 %clean
 rm -rf %{buildroot}
@@ -70,5 +70,5 @@ fi
 %attr(0644, perfsonar, perfsonar) %{httpd_config_base}/apache-opensearchdash.conf
 
 %changelog
-* Thu Feb 15 2022 luan.rios@rnp.br 5.0.0-0.0.a1
+* Tue Feb 15 2022 luan.rios@rnp.br 5.0.0-0.0.a1
 - Initial spec file created
