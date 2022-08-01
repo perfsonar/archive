@@ -55,6 +55,9 @@ if [ "$1" = "1" ]; then
     #Enable and restart apache for reverse proxy
     systemctl enable httpd
     systemctl restart httpd
+elif [ $1 == 2 ];then
+    #if rpm is getting upgraded, (re)start opensearch-dashboards
+    systemctl restart opensearch-dashboards.service
 fi
 
 %preun
