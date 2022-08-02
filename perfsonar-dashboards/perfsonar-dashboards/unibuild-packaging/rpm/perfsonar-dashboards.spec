@@ -17,7 +17,7 @@ URL:			http://www.perfsonar.net
 Source0:		perfsonar-dashboards-%{version}.tar.gz
 BuildRoot:		%{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 BuildArch:		noarch
-Requires:       opensearch-dashboards
+Requires:       opensearch-dashboards >= 2.1.0
 Requires:       httpd
 Requires:       mod_ssl
 
