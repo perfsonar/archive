@@ -18,7 +18,8 @@
         {
           "histograms": {
             "mapping": {
-              "type": "histogram"
+              "type": "object",
+              "enabled": false
             },
             "match": "histogram"
           }
