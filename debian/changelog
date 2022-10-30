@@ -1,5 +1,5 @@
-perfsonar-archive (1.0-1) unstable; urgency=low
+perfsonar-archive (5.0.0~b2.1-1) perfsonar-5.0; urgency=low
 
   * Initial release. 
 
- -- Luan Rios <luan.guimaraes@ufba.br>  Mon, 07 Oct 2021 13:10:09 -0300
+ -- perfSONAR developers <debian@perfsonar.net>  Thu, 27 Oct 2022 10:32:43 -0400
