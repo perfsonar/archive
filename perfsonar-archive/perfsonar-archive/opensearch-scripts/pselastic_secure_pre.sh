@@ -1,5 +1,7 @@
 #!/bin/bash
 
+##  GATHERING INFO
+
 if command -v lsb_release &> /dev/null; then 
     OS=$(lsb_release -si)
 elif [ -f /etc/os-release ]; then
@@ -17,6 +19,7 @@ LOGSTASH_PROXY_USER=perfsonar
 LOGSTASH_USER=pscheduler_logstash
 OPENSEARCH_CONFIG_DIR=/etc/opensearch
 OPENSEARCH_CONFIG_FILE=${OPENSEARCH_CONFIG_DIR}/opensearch.yml
+JVM_FILE=${OPENSEARCH_CONFIG_DIR}/jvm.options
 OPENSEARCH_SECURITY_PLUGIN=/usr/share/opensearch/plugins/opensearch-security
 OPENSEARCH_SECURITY_CONFIG=${OPENSEARCH_CONFIG_DIR}/opensearch-security
 
@@ -31,53 +34,93 @@ else
     exit 1
 fi
 
-# Certificates configurations
-# Clear out any config old settings
-sed -i '/^plugins.security.ssl.transport.pemcert_filepath.*/d' $OPENSEARCH_CONFIG_FILE
-sed -i '/^plugins.security.ssl.transport.pemkey_filepath.*/d' $OPENSEARCH_CONFIG_FILE
-sed -i '/^plugins.security.ssl.http.pemcert_filepath.*/d' $OPENSEARCH_CONFIG_FILE
-sed -i '/^plugins.security.ssl.http.pemkey_filepath.*/d' $OPENSEARCH_CONFIG_FILE
-sed -i '/^plugins.security.authcz.admin_dn.*/d' $OPENSEARCH_CONFIG_FILE
-sed -i '/^plugins.security.allow_unsafe_democertificates.*/d' $OPENSEARCH_CONFIG_FILE
-sed -i '/^  - CN=kirk.*/d' $OPENSEARCH_CONFIG_FILE
-# Clear out any security script settings
-sed -i '/^  - CN=admin.*/d' $OPENSEARCH_CONFIG_FILE
-sed -i '/^plugins.security.nodes_dn.*/d' $OPENSEARCH_CONFIG_FILE
-sed -i '/^  - CN=localhost.*/d' $OPENSEARCH_CONFIG_FILE
+## CONFIGURING TLS
+
 # Delete demo certificate files
 rm -f ${OPENSEARCH_CONFIG_DIR}/*.pem
-# Generate Opendistro Certificates
-# Root CA
+
+# Create a private key for the root certificate
 openssl genrsa -out ${OPENSEARCH_CONFIG_DIR}/root-ca-key.pem 2048
-openssl req -new -x509 -sha256 -key ${OPENSEARCH_CONFIG_DIR}/root-ca-key.pem -subj "/CN=localhost/OU=Example/O=Example/C=br" -out ${OPENSEARCH_CONFIG_DIR}/root-ca.pem -days 180
-# Admin cert
+# Use the private key to create a self-signed root certificate
+openssl req -new -x509 -sha256 -key ${OPENSEARCH_CONFIG_DIR}/root-ca-key.pem -subj "/O=perfSONAR/OU=Archive/CN=root" -out ${OPENSEARCH_CONFIG_DIR}/root-ca.pem -days 730
+
+# Create a private key for the admin certificate
 openssl genrsa -out ${OPENSEARCH_CONFIG_DIR}/admin-key-temp.pem 2048
-openssl pkcs8 -inform PEM -outform PEM -in ${OPENSEARCH_CONFIG_DIR}/admin-key-temp.pem -topk8 -nocrypt -v1 PBE-SHA1-3DES -out ${OPENSEARCH_CONFIG_DIR}/admin-key.pem
-openssl req -new -key ${OPENSEARCH_CONFIG_DIR}/admin-key.pem -subj "/CN=admin" -out ${OPENSEARCH_CONFIG_DIR}/admin.csr
-openssl x509 -req -in ${OPENSEARCH_CONFIG_DIR}/admin.csr -CA ${OPENSEARCH_CONFIG_DIR}/root-ca.pem -CAkey ${OPENSEARCH_CONFIG_DIR}/root-ca-key.pem -CAcreateserial -sha256 -out ${OPENSEARCH_CONFIG_DIR}/admin.pem -days 180
-# Node cert
+# Convert the private key to PKCS#8
+openssl pkcs8 -inform pem -outform pem -in ${OPENSEARCH_CONFIG_DIR}/admin-key-temp.pem -topk8 -nocrypt -v1 PBE-SHA1-3DES -out ${OPENSEARCH_CONFIG_DIR}/admin-key.pem
+# Create the certficiate signing request (CSR)
+openssl req -new -key ${OPENSEARCH_CONFIG_DIR}/admin-key.pem -subj "/O=perfSONAR/OU=Archive/CN=admin" -out ${OPENSEARCH_CONFIG_DIR}/admin.csr
+# Sign the admin certificate with the root certificate and private key created earlier
+openssl x509 -req -in ${OPENSEARCH_CONFIG_DIR}/admin.csr -CA ${OPENSEARCH_CONFIG_DIR}/root-ca.pem -CAkey ${OPENSEARCH_CONFIG_DIR}/root-ca-key.pem -CAcreateserial -sha256 -out ${OPENSEARCH_CONFIG_DIR}/admin.pem -days 730
+
+# Create a private key for the node certificate
 openssl genrsa -out ${OPENSEARCH_CONFIG_DIR}/node-key-temp.pem 2048
-openssl pkcs8 -inform PEM -outform PEM -in ${OPENSEARCH_CONFIG_DIR}/node-key-temp.pem -topk8 -nocrypt -v1 PBE-SHA1-3DES -out ${OPENSEARCH_CONFIG_DIR}/node-key.pem
-openssl req -new -key ${OPENSEARCH_CONFIG_DIR}/node-key.pem -subj "/CN=localhost/OU=node/O=node/L=test/C=br" -out ${OPENSEARCH_CONFIG_DIR}/node.csr
-openssl x509 -req -in ${OPENSEARCH_CONFIG_DIR}/node.csr -CA ${OPENSEARCH_CONFIG_DIR}/root-ca.pem -CAkey ${OPENSEARCH_CONFIG_DIR}/root-ca-key.pem -CAcreateserial -sha256 -out ${OPENSEARCH_CONFIG_DIR}/node.pem -days 180
+# Convert the private key to PKCS#8
+openssl pkcs8 -inform pem -outform pem -in ${OPENSEARCH_CONFIG_DIR}/node-key-temp.pem -topk8 -nocrypt -v1 PBE-SHA1-3DES -out ${OPENSEARCH_CONFIG_DIR}/node-key.pem
+# Create the CSR. The CN should match a DNS A record for the host
+openssl req -new -key ${OPENSEARCH_CONFIG_DIR}/node-key.pem -subj "/O=perfSONAR/OU=Archive/CN=node.localhost" -out ${OPENSEARCH_CONFIG_DIR}/node.csr
+# Create an extension file that defines a SAN DNS name for the host. This should match the DNS A record of the host.
+echo subjectAltName=DNS:node.localhost > ${OPENSEARCH_CONFIG_DIR}/node.ext
+# Sign the node certificate with the root certificate and private key created earlier
+openssl x509 -req -in ${OPENSEARCH_CONFIG_DIR}/node.csr -CA ${OPENSEARCH_CONFIG_DIR}/root-ca.pem -CAkey ${OPENSEARCH_CONFIG_DIR}/root-ca-key.pem -CAcreateserial -sha256 -out ${OPENSEARCH_CONFIG_DIR}/node.pem -days 730 -extfile ${OPENSEARCH_CONFIG_DIR}/node.ext
+
 # Cleanup
-rm -f ${OPENSEARCH_CONFIG_DIR}/admin-key-temp.pem ${OPENSEARCH_CONFIG_DIR}/admin.csr ${OPENSEARCH_CONFIG_DIR}/node-key-temp.pem ${OPENSEARCH_CONFIG_DIR}/node.csr
+rm -f ${OPENSEARCH_CONFIG_DIR}/admin-key-temp.pem ${OPENSEARCH_CONFIG_DIR}/admin.csr ${OPENSEARCH_CONFIG_DIR}/node-key-temp.pem ${OPENSEARCH_CONFIG_DIR}/node.csr ${OPENSEARCH_CONFIG_DIR}/node.ext
+chown opensearch:opensearch ${OPENSEARCH_CONFIG_DIR}/admin-key.pem ${OPENSEARCH_CONFIG_DIR}/admin.pem ${OPENSEARCH_CONFIG_DIR}/node-key.pem ${OPENSEARCH_CONFIG_DIR}/node.pem ${OPENSEARCH_CONFIG_DIR}/root-ca-key.pem ${OPENSEARCH_CONFIG_DIR}/root-ca.pem ${OPENSEARCH_CONFIG_DIR}/root-ca.srl
+
 # Add to Java cacerts
-openssl x509 -outform der -in ${OPENSEARCH_CONFIG_DIR}/node.pem -out ${OPENSEARCH_CONFIG_DIR}/node.der
-keytool -import -alias node -keystore ${CACERTS_FILE} -file ${OPENSEARCH_CONFIG_DIR}/node.der -storepass changeit -noprompt
+openssl x509 -in ${OPENSEARCH_CONFIG_DIR}/root-ca.pem -inform pem -out ${OPENSEARCH_CONFIG_DIR}/root-ca.der -outform der
+keytool -import -alias node -keystore ${CACERTS_FILE} -file ${OPENSEARCH_CONFIG_DIR}/root-ca.der -storepass changeit -noprompt
+
+# Remove old settings
+sed -i '/^plugins.security.ssl.transport.pemcert_filepath:.*/d' $OPENSEARCH_CONFIG_FILE
+sed -i '/^plugins.security.ssl.transport.pemkey_filepath:.*/d' $OPENSEARCH_CONFIG_FILE
+sed -i '/^plugins.security.ssl.transport.pemtrustedcas_filepath:.*/d' $OPENSEARCH_CONFIG_FILE
+sed -i '/^plugins.security.ssl.http.enabled:.*/d' $OPENSEARCH_CONFIG_FILE
+sed -i '/^plugins.security.ssl.http.pemcert_filepath:.*/d' $OPENSEARCH_CONFIG_FILE
+sed -i '/^plugins.security.ssl.http.pemkey_filepath:.*/d' $OPENSEARCH_CONFIG_FILE
+sed -i '/^plugins.security.ssl.http.pemtrustedcas_filepath:.*/d' $OPENSEARCH_CONFIG_FILE
+sed -i '/^plugins.security.allow_default_init_securityindex:.*/d' $OPENSEARCH_CONFIG_FILE
+sed -i '/^plugins.security.authcz.admin_dn:.*/{n;d;}' $OPENSEARCH_CONFIG_FILE
+sed -i '/^plugins.security.authcz.admin_dn:.*/d' $OPENSEARCH_CONFIG_FILE
+sed -i '/^plugins.security.nodes_dn:.*/{n;d;}' $OPENSEARCH_CONFIG_FILE
+sed -i '/^plugins.security.nodes_dn:.*/d' $OPENSEARCH_CONFIG_FILE
+sed -i '/^plugins.security.audit.type:.*/d' $OPENSEARCH_CONFIG_FILE
+sed -i '/^plugins.security.enable_snapshot_restore_privilege:.*/d' $OPENSEARCH_CONFIG_FILE
+sed -i '/^plugins.security.check_snapshot_restore_write_privileges:.*/d' $OPENSEARCH_CONFIG_FILE
+sed -i '/^plugins.security.restapi.roles_enabled:.*/d' $OPENSEARCH_CONFIG_FILE
+sed -i '/^plugins.security.allow_unsafe_democertificates:.*/d' $OPENSEARCH_CONFIG_FILE
+sed -i '/^plugins.security.ssl.transport.enforce_hostname_verification:.*/d' $OPENSEARCH_CONFIG_FILE
+sed -i '/^discovery.type:.*/d' $OPENSEARCH_CONFIG_FILE
 
 # Apply new settings
-echo "plugins.security.ssl.transport.pemcert_filepath: node.pem" | tee -a $OPENSEARCH_CONFIG_FILE > /dev/null
-echo "plugins.security.ssl.transport.pemkey_filepath: node-key.pem" | tee -a $OPENSEARCH_CONFIG_FILE > /dev/null
-echo "plugins.security.ssl.http.pemcert_filepath: node.pem" | tee -a $OPENSEARCH_CONFIG_FILE > /dev/null
-echo "plugins.security.ssl.http.pemkey_filepath: node-key.pem" | tee -a $OPENSEARCH_CONFIG_FILE > /dev/null
-echo "plugins.security.authcz.admin_dn:" | tee -a $OPENSEARCH_CONFIG_FILE > /dev/null
-echo "  - CN=admin" | tee -a $OPENSEARCH_CONFIG_FILE > /dev/null
-echo "plugins.security.nodes_dn:" | tee -a $OPENSEARCH_CONFIG_FILE > /dev/null
-echo "  - CN=localhost,OU=node,O=node,L=test,C=br" | tee -a $OPENSEARCH_CONFIG_FILE > /dev/null
+echo -e '\n######## Start OpenSearch Security PerfSONAR Configuration ########\n' | tee -a $OPENSEARCH_CONFIG_FILE > /dev/null
+echo 'plugins.security.ssl.transport.pemcert_filepath: node.pem' | tee -a $OPENSEARCH_CONFIG_FILE > /dev/null
+echo 'plugins.security.ssl.transport.pemkey_filepath: node-key.pem' | tee -a $OPENSEARCH_CONFIG_FILE > /dev/null
+echo 'plugins.security.ssl.transport.pemtrustedcas_filepath: root-ca.pem' | tee -a $OPENSEARCH_CONFIG_FILE > /dev/null
+echo 'plugins.security.ssl.http.enabled: true' | tee -a $OPENSEARCH_CONFIG_FILE > /dev/null
+echo 'plugins.security.ssl.http.pemcert_filepath: node.pem' | tee -a $OPENSEARCH_CONFIG_FILE > /dev/null
+echo 'plugins.security.ssl.http.pemkey_filepath: node-key.pem' | tee -a $OPENSEARCH_CONFIG_FILE > /dev/null
+echo 'plugins.security.ssl.http.pemtrustedcas_filepath: root-ca.pem' | tee -a $OPENSEARCH_CONFIG_FILE > /dev/null
+echo 'plugins.security.allow_default_init_securityindex: false' | tee -a $OPENSEARCH_CONFIG_FILE > /dev/null
+echo -e 'plugins.security.authcz.admin_dn:\n  - CN=admin,OU=Archive,O=perfSONAR' | tee -a $OPENSEARCH_CONFIG_FILE > /dev/null
+echo -e 'plugins.security.nodes_dn:\n  - CN=node.localhost,OU=Archive,O=perfSONAR' | tee -a $OPENSEARCH_CONFIG_FILE > /dev/null
+echo 'plugins.security.audit.type: internal_opensearch' | tee -a $OPENSEARCH_CONFIG_FILE > /dev/null
+echo 'plugins.security.enable_snapshot_restore_privilege: true' | tee -a $OPENSEARCH_CONFIG_FILE > /dev/null
+echo 'plugins.security.check_snapshot_restore_write_privileges: true' | tee -a $OPENSEARCH_CONFIG_FILE > /dev/null
+echo 'plugins.security.restapi.roles_enabled: ["all_access", "security_rest_api_access"]' | tee -a $OPENSEARCH_CONFIG_FILE > /dev/null
+echo 'plugins.security.allow_unsafe_democertificates: false' | tee -a $OPENSEARCH_CONFIG_FILE > /dev/null
+echo 'plugins.security.ssl.transport.enforce_hostname_verification: false' | tee -a $OPENSEARCH_CONFIG_FILE > /dev/null
+echo 'discovery.type: single-node' | tee -a $OPENSEARCH_CONFIG_FILE > /dev/null
+echo -e '\n######## End OpenSearch Security PerfSONAR Configuration ########' | tee -a $OPENSEARCH_CONFIG_FILE > /dev/null
+
+## Specify initial and maximum JVM heap sizes.
+
+HALF_MEM=$(free --giga | grep Mem: | awk '{ print $2/2 }')
+sed -i "s/^-Xms1g/-Xms${HALF_MEM}g/g" $JVM_FILE
+sed -i "s/^-Xmx1g/-Xmx${HALF_MEM}g/g" $JVM_FILE
 
 # Give execute permission to opensearch hash script
-
 chmod +x ${OPENSEARCH_SECURITY_PLUGIN}/tools/hash.sh
 
 # Generate default users random passwords, write them to tmp file and, if it works, move to permanent file
@@ -90,7 +133,6 @@ else
     egrep -v '^[[:blank:]]' "${OPENSEARCH_SECURITY_CONFIG}/internal_users.yml" | egrep "\:$" | egrep -v '^\_' | sed 's\:\\g' | while read user; do
         PASS=$(tr -dc A-Za-z0-9 </dev/urandom | head -c 20)
         echo "$user $PASS" >> $TEMPFILE
-        #HASHED_PASS=$(${OPENSEARCH_SECURITY_PLUGIN}/tools/hash.sh -p $PASS | sed -e 's/[&\\/]/\\&/g')
         HASHED_PASS=$(${OPENSEARCH_SECURITY_PLUGIN}/tools/hash.sh -p $PASS | tail -n 1 | sed -e 's/[&\\/]/\\&/g')
         if [[ $OS == *"CentOS"* ]]; then
             sed -i -e '/^'$user'\:$/,/[^hash.*$]/s/\(hash\: \).*$/\1"'$HASHED_PASS'"/' "${OPENSEARCH_SECURITY_CONFIG}/internal_users.yml"
@@ -103,7 +145,7 @@ else
 fi
 
 # Get password for admin user
-ADMIN_PASS=$(grep "admin " $PASSWORD_FILE | head -n 1 | sed 's/^admin //')
+ADMIN_PASS=$(grep -w "admin" $PASSWORD_FILE | head -n 1 | awk '{print $2}')
 if [ $? -ne 0 ]; then
     echo "Failed to parse password"
     exit 1
@@ -112,16 +154,13 @@ elif [ -z "$ADMIN_PASS" ]; then
     exit 1
 fi
 
-# Create file with admin login - delete if already exists
-if [ -f "$ADMIN_LOGIN_FILE" ] ; then
-    rm "$ADMIN_LOGIN_FILE"
-fi
-echo "admin $ADMIN_PASS" | tee -a $ADMIN_LOGIN_FILE > /dev/null
+# Create file with admin login - overwrite it if already exists (is this file necessary?)
+echo "admin $ADMIN_PASS" > $ADMIN_LOGIN_FILE
 chmod 600 $ADMIN_LOGIN_FILE
 echo "[DONE]"
 echo ""
 
-# Create perfsonar usar for logstash auth in proxy layer
+# Create perfsonar user for logstash auth in proxy layer
 if [ -f "$LOGSTASH_PROXY_LOGIN_FILE" ] ; then
     rm "$LOGSTASH_PROXY_LOGIN_FILE"
 fi
@@ -132,23 +171,24 @@ echo "\"Authorization\":\"Basic $LOGIN_BASE64\"" | tee -a $PROXY_AUTH_JSON > /de
 
 # new users: pscheduler_logstash, pscheduler_reader and pscheduler_writer
 # 1. Create users, generate passwords and save them to file 
-echo "[Creating $LOGSTASH_USER user]"
-grep "# Pscheduler Logstash" $OPENSEARCH_SECURITY_CONFIG/internal_users.yml
+echo "[Creating pscheduler users]"
+grep "pscheduler" $OPENSEARCH_SECURITY_CONFIG/internal_users.yml > /dev/null
 if [ $? -eq 0 ]; then
     echo "User already created"
 else
     # pscheduler_logstash
+    echo "[Creating $LOGSTASH_USER user]"
     PASS=$(tr -dc A-Za-z0-9 </dev/urandom | head -c 20)
     HASHED_PASS=$(${OPENSEARCH_SECURITY_PLUGIN}/tools/hash.sh -p $PASS | tail -n 1)
     echo "$LOGSTASH_USER $PASS" | tee -a $PASSWORD_FILE  > /dev/null
     echo | tee -a $OPENSEARCH_SECURITY_CONFIG/internal_users.yml > /dev/null
-    echo | tee -a $OPENSEARCH_SECURITY_CONFIG/internal_users.yml > /dev/null
-    echo 'pscheduler_logstash:' | tee -a $OPENSEARCH_SECURITY_CONFIG/internal_users.yml > /dev/null
+    echo "$LOGSTASH_USER:" | tee -a $OPENSEARCH_SECURITY_CONFIG/internal_users.yml > /dev/null
     echo '  hash: "'$HASHED_PASS'"' | tee -a $OPENSEARCH_SECURITY_CONFIG/internal_users.yml > /dev/null
     echo '  reserved: true' | tee -a $OPENSEARCH_SECURITY_CONFIG/internal_users.yml > /dev/null
     echo '  description: "pscheduler logstash user"' | tee -a $OPENSEARCH_SECURITY_CONFIG/internal_users.yml > /dev/null
 
     # pscheduler_reader
+    echo "[Creating pscheduler_reader user]"
     PASS=$(tr -dc A-Za-z0-9 </dev/urandom | head -c 20)
     HASHED_PASS=$(${OPENSEARCH_SECURITY_PLUGIN}/tools/hash.sh -p $PASS | tail -n 1)
     echo "pscheduler_reader $PASS" | tee -a $PASSWORD_FILE  > /dev/null
@@ -157,8 +197,9 @@ else
     echo '  hash: "'$HASHED_PASS'"' | tee -a $OPENSEARCH_SECURITY_CONFIG/internal_users.yml > /dev/null
     echo '  reserved: true' | tee -a $OPENSEARCH_SECURITY_CONFIG/internal_users.yml > /dev/null
     echo '  description: "pscheduler reader user"' | tee -a $OPENSEARCH_SECURITY_CONFIG/internal_users.yml > /dev/null
- 
+
     # pscheduler_writer
+    echo "[Creating pscheduler_writer user]"
     PASS=$(tr -dc A-Za-z0-9 </dev/urandom | head -c 20)
     HASHED_PASS=$(${OPENSEARCH_SECURITY_PLUGIN}/tools/hash.sh -p $PASS | tail -n 1)
     echo "pscheduler_writer $PASS" | tee -a $PASSWORD_FILE  > /dev/null
@@ -169,21 +210,21 @@ else
     echo '  description: "pscheduler writer user"' | tee -a $OPENSEARCH_SECURITY_CONFIG/internal_users.yml > /dev/null
 
     # Enable anonymous user
-    sed -i 's/anonymous_auth_enabled: false/anonymous_auth_enabled: true/g' $OPENSEARCH_SECURITY_CONFIG/config.yml
+    sed -i 's/\(anonymous_auth_enabled:\).*/\1 true/g' $OPENSEARCH_SECURITY_CONFIG/config.yml
 fi
 echo "[DONE]"
 echo ""
 
 # 2. Create roles
-echo "[Creating $LOGSTASH_USER role]"
-grep "# Pscheduler Logstash" $OPENSEARCH_SECURITY_CONFIG/roles.yml
+echo "[Creating pscheduler roles]"
+grep "pscheduler" $OPENSEARCH_SECURITY_CONFIG/roles.yml > /dev/null
 if [ $? -eq 0 ]; then
     echo "Role already created"
 else
     # pscheduler_logstash
+    echo "[Creating $LOGSTASH_USER role]"
     echo | tee -a $OPENSEARCH_SECURITY_CONFIG/roles.yml > /dev/null
-    echo | tee -a $OPENSEARCH_SECURITY_CONFIG/roles.yml > /dev/null
-    echo "pscheduler_logstash:" | tee -a $OPENSEARCH_SECURITY_CONFIG/roles.yml > /dev/null
+    echo "$LOGSTASH_USER:" | tee -a $OPENSEARCH_SECURITY_CONFIG/roles.yml > /dev/null
     echo "  cluster_permissions:" | tee -a $OPENSEARCH_SECURITY_CONFIG/roles.yml > /dev/null
     echo "    - 'cluster_monitor'" | tee -a $OPENSEARCH_SECURITY_CONFIG/roles.yml > /dev/null
     echo "    - 'cluster_manage_index_templates'" | tee -a $OPENSEARCH_SECURITY_CONFIG/roles.yml > /dev/null
@@ -201,6 +242,7 @@ else
     echo "      - 'indices:admin/template/put'" | tee -a $OPENSEARCH_SECURITY_CONFIG/roles.yml > /dev/null
 
     # pscheduler_reader => read-only access to the pscheduler indices
+    echo "[Creating pscheduler_reader role]"
     echo | tee -a $OPENSEARCH_SECURITY_CONFIG/roles.yml > /dev/null
     echo "pscheduler_reader:" | tee -a $OPENSEARCH_SECURITY_CONFIG/roles.yml > /dev/null
     echo "  reserved: true" | tee -a $OPENSEARCH_SECURITY_CONFIG/roles.yml > /dev/null
@@ -211,6 +253,7 @@ else
     echo "      - 'read'" | tee -a $OPENSEARCH_SECURITY_CONFIG/roles.yml > /dev/null
 
     # pscheduler_writer => write-only access to the pscheduler indices
+    echo "[Creating pscheduler_writer role]"
     echo | tee -a $OPENSEARCH_SECURITY_CONFIG/roles.yml > /dev/null
     echo "pscheduler_writer:" | tee -a $OPENSEARCH_SECURITY_CONFIG/roles.yml > /dev/null
     echo "  reserved: true" | tee -a $OPENSEARCH_SECURITY_CONFIG/roles.yml > /dev/null
@@ -224,19 +267,21 @@ echo "[DONE]"
 echo ""
 
 # 3. Map users to roles
-echo "[Mapping $LOGSTASH_USER user to $LOGSTASH_USER role]"
-grep "# Pscheduler Logstash" $OPENSEARCH_SECURITY_CONFIG/roles_mapping.yml
+echo "[Mapping pscheduler users to pscheduler roles]"
+grep "pscheduler" $OPENSEARCH_SECURITY_CONFIG/roles_mapping.yml > /dev/null
 if [ $? -eq 0 ]; then
     echo "Map already created"
 else
     # pscheduler_logstash
+    echo "[Mapping $LOGSTASH_USER user to $LOGSTASH_USER role]"
     echo | tee -a $OPENSEARCH_SECURITY_CONFIG/roles_mapping.yml > /dev/null
-    echo 'pscheduler_logstash:' | tee -a $OPENSEARCH_SECURITY_CONFIG/roles_mapping.yml > /dev/null
+    echo "$LOGSTASH_USER:" | tee -a $OPENSEARCH_SECURITY_CONFIG/roles_mapping.yml > /dev/null
     echo '  reserved: true' | tee -a $OPENSEARCH_SECURITY_CONFIG/roles_mapping.yml > /dev/null
     echo '  users:' | tee -a $OPENSEARCH_SECURITY_CONFIG/roles_mapping.yml > /dev/null
-    echo '  - "pscheduler_logstash"' | tee -a $OPENSEARCH_SECURITY_CONFIG/roles_mapping.yml > /dev/null
+    echo "  - \"$LOGSTASH_USER\"" | tee -a $OPENSEARCH_SECURITY_CONFIG/roles_mapping.yml > /dev/null
 
     # pscheduler_reader
+    echo "[Mapping pscheduler_reader user to pscheduler_reader role]"
     echo | tee -a $OPENSEARCH_SECURITY_CONFIG/roles_mapping.yml > /dev/null
     echo 'pscheduler_reader:' | tee -a $OPENSEARCH_SECURITY_CONFIG/roles_mapping.yml > /dev/null
     echo '  reserved: true' | tee -a $OPENSEARCH_SECURITY_CONFIG/roles_mapping.yml > /dev/null
@@ -247,6 +292,7 @@ else
     echo '  - "opendistro_security_anonymous_backendrole"' | tee -a $OPENSEARCH_SECURITY_CONFIG/roles_mapping.yml > /dev/null
 
     # pscheduler_writer
+    echo "[Mapping pscheduler_writer user to pscheduler_writer role]"
     echo | tee -a $OPENSEARCH_SECURITY_CONFIG/roles_mapping.yml > /dev/null
     echo 'pscheduler_writer:' | tee -a $OPENSEARCH_SECURITY_CONFIG/roles_mapping.yml > /dev/null
     echo '  reserved: true' | tee -a $OPENSEARCH_SECURITY_CONFIG/roles_mapping.yml > /dev/null
@@ -258,15 +304,15 @@ echo ""
 
 # 5. Configure logstash to use pscheduler_logstash user/password
 echo "[Configure logstash]"
-LOGSTASH_PASS=$(grep "pscheduler_logstash " $PASSWORD_FILE | head -n 1 | sed 's/^pscheduler_logstash //')
+LOGSTASH_PASS=$(grep $LOGSTASH_USER $PASSWORD_FILE | head -n 1 | awk '{print $2}')
 echo "LOGSTASH_ELASTIC_USER=${LOGSTASH_USER}" | tee -a $LOGSTASH_SYSCONFIG > /dev/null
-sed -i 's/opensearch_output_password=pscheduler_logstash/opensearch_output_password='$LOGSTASH_PASS'/g' $LOGSTASH_SYSCONFIG
+sed -i 's/\(opensearch_output_password=\).*/\1'$LOGSTASH_PASS'/g' $LOGSTASH_SYSCONFIG
 echo "[DONE]"
 echo ""
 
 # 6. Fixes
 #changing the logstash port range to avoid conflict with opendistro-performance-analyzer
-sed -i 's/# api.http.port: 9600-9700/api.http.port: 9601-9700/g' /etc/logstash/logstash.yml
+sed -i 's/# \(api.http.port:\) 9600-9700/\1 9601-9700/g' /etc/logstash/logstash.yml
 
 #issue: https://github.com/opendistro-for-elasticsearch/performance-analyzer/issues/229
 echo false | tee /usr/share/opensearch/data/batch_metrics_enabled.conf
