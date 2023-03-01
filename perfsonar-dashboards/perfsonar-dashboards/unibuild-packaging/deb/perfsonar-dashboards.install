@@ -1,0 +1,2 @@
+config/* /etc/apache2/conf-available/
+dashboards-scripts/* /usr/lib/perfsonar/dashboards/dashboards-scripts/

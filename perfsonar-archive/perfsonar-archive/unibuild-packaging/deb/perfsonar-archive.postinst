@@ -1,0 +1,69 @@
+#!/bin/bash
+# postinst script for perfsonar-archive
+#
+# see: dh_installdeb(1)
+
+set -e
+
+case "$1" in
+    configure)
+        export JAVA_HOME=/usr/share/opensearch/jdk
+        # check if installation or update, where version is a parameter
+        if [ -z "$2" ]; then
+            #install
+            #####
+            # 5.0 upgrade - clean out esmond. Don't obsolete so people can still get at data
+            (systemctl stop --quiet cassandra &> /dev/null) || :
+            (systemctl disable --quiet cassandra &> /dev/null) || :
+            rm -f /etc/apache2/conf-available/apache-esmond.conf
+            rm -f /etc/apache2/conf-enabled/apache-esmond.conf
+            ######
+
+            #if new install, then enable
+            systemctl daemon-reload
+            systemctl enable opensearch.service
+            systemctl enable logstash.service
+
+            #fix directory permissions
+            chmod g+ws /etc/opensearch/
+            chown -R root:opensearch /etc/opensearch/
+            #run opensearch pre startup script
+            bash /usr/lib/perfsonar/archive/perfsonar-scripts/pselastic_secure_pre.sh
+
+            #start opensearch
+            systemctl start opensearch.service
+            #restart logstash
+            systemctl restart logstash.service
+
+            #run opensearch post startup script
+            bash /usr/lib/perfsonar/archive/perfsonar-scripts/pselastic_secure_pos.sh
+            #run elmond configuration script
+            bash /usr/lib/perfsonar/archive/perfsonar-scripts/elmond_configuration.sh
+            usermod -a -G opensearch perfsonar
+            #restart elmond
+            systemctl restart elmond.service
+
+            #Enable and restart apache for reverse proxy
+            /usr/sbin/a2enmod proxy
+            /usr/sbin/a2enmod proxy_http
+            /usr/sbin/a2enconf apache-logstash
+            /usr/sbin/a2enconf apache-opensearch
+            systemctl enable apache2
+            systemctl restart apache2
+        else
+            #upgrade
+            systemctl restart opensearch.service
+        fi
+    ;;
+
+    abort-upgrade|abort-remove|abort-deconfigure)
+    ;;
+
+    *)
+        echo "postinst called with unknown argument \`$1'" >&2
+        exit 1
+    ;;
+esac
+
+#DEBHELPER#
+exit 0

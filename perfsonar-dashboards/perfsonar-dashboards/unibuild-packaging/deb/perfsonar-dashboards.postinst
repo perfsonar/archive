@@ -1,0 +1,46 @@
+#!/bin/bash
+# postinst script for perfsonar-dashboards
+#
+# see: dh_installdeb(1)
+
+set -e
+
+case "$1" in
+    configure)
+        # check if installation or update, where version is a parameter
+        if [ -z "$2" ]; then
+            ##install
+            #if new install, then enable
+            systemctl daemon-reload
+            systemctl enable opensearch-dashboards.service
+
+            #run opensearch dashboards pre startup script
+            bash /usr/lib/perfsonar/dashboards/dashboards-scripts/dashboards_secure_pre.sh
+            #start opensearch dashboards
+            systemctl start opensearch-dashboards.service
+            #run opensearch dashboards post startup script
+            bash /usr/lib/perfsonar/dashboards/dashboards-scripts/dashboards_secure_pos.sh
+
+            #Enable and restart apache for reverse proxy
+            /usr/sbin/a2enmod proxy
+            /usr/sbin/a2enmod proxy_http
+            /usr/sbin/a2enconf apache-opensearchdash
+            systemctl enable apache2
+            systemctl restart apache2
+        else
+            #upgrade
+            systemctl restart opensearch.service
+        fi
+    ;;
+
+    abort-upgrade|abort-remove|abort-deconfigure)
+    ;;
+
+    *)
+        echo "postinst called with unknown argument \`$1'" >&2
+        exit 1
+    ;;
+esac
+
+#DEBHELPER#
+exit 0

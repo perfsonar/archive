@@ -1,0 +1,13 @@
+Source: perfsonar-archive
+Maintainer: perfSONAR developers <debian@perfsonar.net>
+Section: misc
+Priority: optional
+Standards-Version: 4.3.0
+Build-Depends: debhelper (>= 10)
+Homepage: http://www.perfsonar.net
+
+Package: perfsonar-archive
+Architecture: all
+Depends: ${shlibs:Depends}, ${misc:Depends}, opensearch, openjdk-11-jdk, openssl, jq, perfsonar-logstash, perfsonar-elmond, apache2, apache2-ssl-dev
+Description: perfsonar archive
+ A package that installs the perfSONAR Archive based on Logstash and Opensearch.
