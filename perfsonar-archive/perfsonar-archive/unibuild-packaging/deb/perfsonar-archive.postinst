@@ -23,6 +23,7 @@ case "$1" in
             systemctl daemon-reload
             systemctl enable opensearch.service
             systemctl enable logstash.service
+            systemctl stop opensearch.service
 
             #fix directory permissions
             chmod g+ws /etc/opensearch/
@@ -44,6 +45,7 @@ case "$1" in
             systemctl restart elmond.service
 
             #Enable and restart apache for reverse proxy
+            /usr/sbin/a2enmod ssl
             /usr/sbin/a2enmod proxy
             /usr/sbin/a2enmod proxy_http
             /usr/sbin/a2enconf apache-logstash
