@@ -58,9 +58,9 @@ openssl genrsa -out ${OPENSEARCH_CONFIG_DIR}/node-key-temp.pem 2048
 # Convert the private key to PKCS#8
 openssl pkcs8 -inform pem -outform pem -in ${OPENSEARCH_CONFIG_DIR}/node-key-temp.pem -topk8 -nocrypt -v1 PBE-SHA1-3DES -out ${OPENSEARCH_CONFIG_DIR}/node-key.pem
 # Create the CSR. The CN should match a DNS A record for the host
-openssl req -new -key ${OPENSEARCH_CONFIG_DIR}/node-key.pem -subj "/O=perfSONAR/OU=Archive/CN=node.localhost" -out ${OPENSEARCH_CONFIG_DIR}/node.csr
+openssl req -new -key ${OPENSEARCH_CONFIG_DIR}/node-key.pem -subj "/O=perfSONAR/OU=Archive/CN=localhost" -out ${OPENSEARCH_CONFIG_DIR}/node.csr
 # Create an extension file that defines a SAN DNS name for the host. This should match the DNS A record of the host.
-echo subjectAltName=DNS:node.localhost > ${OPENSEARCH_CONFIG_DIR}/node.ext
+echo subjectAltName=DNS:localhost > ${OPENSEARCH_CONFIG_DIR}/node.ext
 # Sign the node certificate with the root certificate and private key created earlier
 openssl x509 -req -in ${OPENSEARCH_CONFIG_DIR}/node.csr -CA ${OPENSEARCH_CONFIG_DIR}/root-ca.pem -CAkey ${OPENSEARCH_CONFIG_DIR}/root-ca-key.pem -CAcreateserial -sha256 -out ${OPENSEARCH_CONFIG_DIR}/node.pem -days 730 -extfile ${OPENSEARCH_CONFIG_DIR}/node.ext
 
@@ -104,7 +104,7 @@ echo 'plugins.security.ssl.http.pemkey_filepath: node-key.pem' | tee -a $OPENSEA
 echo 'plugins.security.ssl.http.pemtrustedcas_filepath: root-ca.pem' | tee -a $OPENSEARCH_CONFIG_FILE > /dev/null
 echo 'plugins.security.allow_default_init_securityindex: false' | tee -a $OPENSEARCH_CONFIG_FILE > /dev/null
 echo -e 'plugins.security.authcz.admin_dn:\n  - CN=admin,OU=Archive,O=perfSONAR' | tee -a $OPENSEARCH_CONFIG_FILE > /dev/null
-echo -e 'plugins.security.nodes_dn:\n  - CN=node.localhost,OU=Archive,O=perfSONAR' | tee -a $OPENSEARCH_CONFIG_FILE > /dev/null
+echo -e 'plugins.security.nodes_dn:\n  - CN=localhost,OU=Archive,O=perfSONAR' | tee -a $OPENSEARCH_CONFIG_FILE > /dev/null
 echo 'plugins.security.audit.type: internal_opensearch' | tee -a $OPENSEARCH_CONFIG_FILE > /dev/null
 echo 'plugins.security.enable_snapshot_restore_privilege: true' | tee -a $OPENSEARCH_CONFIG_FILE > /dev/null
 echo 'plugins.security.check_snapshot_restore_write_privileges: true' | tee -a $OPENSEARCH_CONFIG_FILE > /dev/null
