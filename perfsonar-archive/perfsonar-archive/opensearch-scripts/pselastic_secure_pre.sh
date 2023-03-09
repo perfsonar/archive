@@ -116,7 +116,7 @@ echo -e '\n######## End OpenSearch Security PerfSONAR Configuration ########' | 
 
 ## Specify initial and maximum JVM heap sizes.
 
-HALF_MEM=$(free --giga | grep Mem: | awk '{ print $2/2 }')
+HALF_MEM=$(free --giga | grep Mem: | awk '{ print int($2/2) }')
 sed -i "s/^-Xms.*/-Xms${HALF_MEM}g/g" $JVM_FILE
 sed -i "s/^-Xmx.*/-Xmx${HALF_MEM}g/g" $JVM_FILE
 
