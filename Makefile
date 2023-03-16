@@ -35,6 +35,5 @@ fresh: uninstall build
 clean:
 	unibuild make $(UNIBUILD_OPTS) clean
 	unibuild clean
-	$(MAKE) -C docs $@
 	rm -rf $(TO_CLEAN)
 	find . -name '*~' | xargs rm -f
