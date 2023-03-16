@@ -22,6 +22,7 @@ Requires:		opensearch >= 2.1.0
 Requires:       java-11-openjdk
 Requires:       openssl
 Requires:       jq
+Requires:       perfsonr-common
 Requires:       perfsonar-logstash
 Requires:       perfsonar-elmond
 Requires:       httpd
@@ -30,10 +31,6 @@ Requires:       curl
 
 %description
 A package that installs the perfSONAR Archive based on Logstash and Opensearch.
-
-%pre
-/usr/sbin/groupadd -r perfsonar 2> /dev/null || :
-/usr/sbin/useradd -g perfsonar -r -s /sbin/nologin -c "perfSONAR User" -d /tmp perfsonar 2> /dev/null || :
 
 %prep
 %setup -q -n perfsonar-archive-%{version}

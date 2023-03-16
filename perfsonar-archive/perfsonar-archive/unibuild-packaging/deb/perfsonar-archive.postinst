@@ -13,48 +13,47 @@ case "$1" in
             #install
             #####
             # 5.0 upgrade - clean out esmond. Don't obsolete so people can still get at data
-            (systemctl stop --quiet cassandra &> /dev/null) || :
-            (systemctl disable --quiet cassandra &> /dev/null) || :
-            rm -f /etc/apache2/conf-available/apache-esmond.conf
-            rm -f /etc/apache2/conf-enabled/apache-esmond.conf
+            (service cassandra stop &> /dev/null) || :
+            (update-rc.d cassandra disable &> /dev/null) || :
             ######
 
-            #if new install, then enable
-            systemctl daemon-reload
-            systemctl enable opensearch.service
-            systemctl enable logstash.service
-            systemctl stop opensearch.service
+            # if new install, then enable
+            update-rc.d opensearch enable
+            update-rc.d logstash enable
+            service opensearch stop
 
             #fix directory permissions
-            chmod g+ws /etc/opensearch/
-            chown -R root:opensearch /etc/opensearch/
+            #chmod g+ws /etc/opensearch/
+            #chown -R root:opensearch /etc/opensearch/
             #run opensearch pre startup script
             bash /usr/lib/perfsonar/archive/perfsonar-scripts/pselastic_secure_pre.sh
 
-            #start opensearch
-            systemctl start opensearch.service
-            #restart logstash
-            systemctl restart logstash.service
+            # Start services
+            service opensearch start
+            service logstash restart
 
-            #run opensearch post startup script
+            # Opensearch post startup script
             bash /usr/lib/perfsonar/archive/perfsonar-scripts/pselastic_secure_pos.sh
-            #run elmond configuration script
+            # Elmond configuration script
             bash /usr/lib/perfsonar/archive/perfsonar-scripts/elmond_configuration.sh
             usermod -a -G opensearch perfsonar
-            #restart elmond
-            systemctl restart elmond.service
+            # Restart Elmond
+            service elmond restart
 
-            #Enable and restart apache for reverse proxy
-            /usr/sbin/a2enmod ssl
-            /usr/sbin/a2enmod proxy
-            /usr/sbin/a2enmod proxy_http
-            /usr/sbin/a2enconf apache-logstash
-            /usr/sbin/a2enconf apache-opensearch
-            systemctl enable apache2
-            systemctl restart apache2
+            # Apache setup
+            if [ -e /usr/share/apache2/apache2-maintscript-helper ]; then
+                . /usr/share/apache2/apache2-maintscript-helper
+
+                apache2_invoke enmod ssl
+                apache2_invoke enmod proxy
+                apache2_invoke enmod proxy_http
+                apache2_invoke disconf apache-esmond
+                apache2_invoke enconf apache-logstash
+                apache2_invoke enconf apache-opensearch
+            fi
         else
             #upgrade
-            systemctl restart opensearch.service
+            service opensearch restart
         fi
     ;;
 
