@@ -10,23 +10,24 @@ case "$1" in
         export JAVA_HOME=/usr/share/opensearch/jdk
         # check if installation or update, where version is a parameter
         if [ -z "$2" ]; then
-            #install
             #####
             # 5.0 upgrade - clean out esmond. Don't obsolete so people can still get at data
             (service cassandra stop &> /dev/null) || :
-            (update-rc.d cassandra disable &> /dev/null) || :
+            (systemctl disable cassandra &> /dev/null) || :
             ######
 
             # if new install, then enable
-            update-rc.d opensearch enable
-            update-rc.d logstash enable
+            systemctl enable opensearch
+            systemctl enable logstash
             service opensearch stop
 
-            #fix directory permissions
-            #chmod g+ws /etc/opensearch/
-            #chown -R root:opensearch /etc/opensearch/
-            #run opensearch pre startup script
+            # fix directory permissions
+            chmod g+ws /etc/opensearch/
+            chown -R root:opensearch /etc/opensearch/
+            # run opensearch pre startup script
             bash /usr/lib/perfsonar/archive/perfsonar-scripts/pselastic_secure_pre.sh
+            # correcting JNA tmpdir
+            sed -i 's|^#OPENSEARCH_JAVA_OPTS=|OPENSEARCH_JAVA_OPTS="-Djna.tmpdir=/var/lib/opensearch/tmp"|' /etc/default/opensearch
 
             # Start services
             service opensearch start

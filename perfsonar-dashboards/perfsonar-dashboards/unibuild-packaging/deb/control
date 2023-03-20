@@ -1,6 +1,6 @@
 Source: perfsonar-dashboards
 Maintainer: perfSONAR developers <debian@perfsonar.net>
-Section: misc
+Section: net
 Priority: optional
 Standards-Version: 4.3.0
 Build-Depends: debhelper (>= 10)
@@ -8,6 +8,8 @@ Homepage: http://www.perfsonar.net
 
 Package: perfsonar-dashboards
 Architecture: all
-Depends: ${shlibs:Depends}, ${misc:Depends}, opensearch-dashboards, apache2, apache2-ssl-dev
-Description: perfsonar archive dashboards
- A package that installs and configure Opensearch Dashboards
+Depends: ${shlibs:Depends}, ${misc:Depends}, opensearch-dashboards, apache2,
+ apache2-ssl-dev, perfsonar-common
+Description: perfSONAR archive dashboards
+ A package that installs and configure Opensearch Dashboards for
+ perfSONAR usage and accessing the Opensearch based perfSONAR Archive.

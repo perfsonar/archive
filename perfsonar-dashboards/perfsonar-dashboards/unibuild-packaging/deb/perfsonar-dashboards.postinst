@@ -9,27 +9,26 @@ case "$1" in
     configure)
         # check if installation or update, where version is a parameter
         if [ -z "$2" ]; then
-            ##install
-            #if new install, then enable
-            systemctl daemon-reload
-            systemctl enable opensearch-dashboards.service
-
+            #enable opensearch-dashboards service
+            systemctl enable opensearch-dashboards
             #run opensearch dashboards pre startup script
             bash /usr/lib/perfsonar/dashboards/dashboards-scripts/dashboards_secure_pre.sh
             #start opensearch dashboards
-            systemctl start opensearch-dashboards.service
+            systemctl start opensearch-dashboards
             #run opensearch dashboards post startup script
             bash /usr/lib/perfsonar/dashboards/dashboards-scripts/dashboards_secure_pos.sh
 
-            #Enable and restart apache for reverse proxy
-            /usr/sbin/a2enmod proxy
-            /usr/sbin/a2enmod proxy_http
-            /usr/sbin/a2enconf apache-opensearchdash
-            systemctl enable apache2
-            systemctl restart apache2
+            # Apache setup
+            if [ -e /usr/share/apache2/apache2-maintscript-helper ]; then
+                . /usr/share/apache2/apache2-maintscript-helper
+
+                apache2_invoke enmod proxy
+                apache2_invoke enmod proxy_http
+                apache2_invoke enconf apache-opensearchdash
+            fi
         else
             #upgrade
-            systemctl restart opensearch.service
+            systemctl restart opensearch
         fi
     ;;
 

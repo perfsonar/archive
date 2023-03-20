@@ -315,4 +315,6 @@ echo ""
 sed -i 's/# \(api.http.port:\) 9600-9700/\1 9601-9700/g' /etc/logstash/logstash.yml
 
 #issue: https://github.com/opendistro-for-elasticsearch/performance-analyzer/issues/229
-echo false | tee /usr/share/opensearch/data/batch_metrics_enabled.conf
+echo false > /usr/share/opensearch/data/batch_metrics_enabled.conf
+chown opensearch:opensearch /usr/share/opensearch/data/batch_metrics_enabled.conf
+
