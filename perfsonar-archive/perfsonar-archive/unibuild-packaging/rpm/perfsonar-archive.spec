@@ -22,7 +22,7 @@ Requires:		opensearch >= 2.1.0
 Requires:       java-11-openjdk
 Requires:       openssl
 Requires:       jq
-Requires:       perfsonr-common
+Requires:       perfsonar-common
 Requires:       perfsonar-logstash
 Requires:       perfsonar-elmond
 Requires:       httpd
