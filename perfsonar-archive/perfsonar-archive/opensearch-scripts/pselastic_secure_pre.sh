@@ -42,7 +42,7 @@ rm -f ${OPENSEARCH_CONFIG_DIR}/*.pem
 # Create a private key for the root certificate
 openssl genrsa -out ${OPENSEARCH_CONFIG_DIR}/root-ca-key.pem 2048
 # Use the private key to create a self-signed root certificate
-openssl req -new -x509 -sha256 -key ${OPENSEARCH_CONFIG_DIR}/root-ca-key.pem -subj "/O=perfSONAR/OU=Archive/CN=root" -out ${OPENSEARCH_CONFIG_DIR}/root-ca.pem -days 730
+openssl req -new -x509 -sha256 -key ${OPENSEARCH_CONFIG_DIR}/root-ca-key.pem -subj "/O=perfSONAR/OU=Archive/CN=root" -out ${OPENSEARCH_CONFIG_DIR}/root-ca.pem -days 7300
 
 # Create a private key for the admin certificate
 openssl genrsa -out ${OPENSEARCH_CONFIG_DIR}/admin-key-temp.pem 2048
@@ -51,7 +51,7 @@ openssl pkcs8 -inform pem -outform pem -in ${OPENSEARCH_CONFIG_DIR}/admin-key-te
 # Create the certficiate signing request (CSR)
 openssl req -new -key ${OPENSEARCH_CONFIG_DIR}/admin-key.pem -subj "/O=perfSONAR/OU=Archive/CN=admin" -out ${OPENSEARCH_CONFIG_DIR}/admin.csr
 # Sign the admin certificate with the root certificate and private key created earlier
-openssl x509 -req -in ${OPENSEARCH_CONFIG_DIR}/admin.csr -CA ${OPENSEARCH_CONFIG_DIR}/root-ca.pem -CAkey ${OPENSEARCH_CONFIG_DIR}/root-ca-key.pem -CAcreateserial -sha256 -out ${OPENSEARCH_CONFIG_DIR}/admin.pem -days 730
+openssl x509 -req -in ${OPENSEARCH_CONFIG_DIR}/admin.csr -CA ${OPENSEARCH_CONFIG_DIR}/root-ca.pem -CAkey ${OPENSEARCH_CONFIG_DIR}/root-ca-key.pem -CAcreateserial -sha256 -out ${OPENSEARCH_CONFIG_DIR}/admin.pem -days 7300
 
 # Create a private key for the node certificate
 openssl genrsa -out ${OPENSEARCH_CONFIG_DIR}/node-key-temp.pem 2048
@@ -62,7 +62,7 @@ openssl req -new -key ${OPENSEARCH_CONFIG_DIR}/node-key.pem -subj "/O=perfSONAR/
 # Create an extension file that defines a SAN DNS name for the host. This should match the DNS A record of the host.
 echo subjectAltName=DNS:localhost > ${OPENSEARCH_CONFIG_DIR}/node.ext
 # Sign the node certificate with the root certificate and private key created earlier
-openssl x509 -req -in ${OPENSEARCH_CONFIG_DIR}/node.csr -CA ${OPENSEARCH_CONFIG_DIR}/root-ca.pem -CAkey ${OPENSEARCH_CONFIG_DIR}/root-ca-key.pem -CAcreateserial -sha256 -out ${OPENSEARCH_CONFIG_DIR}/node.pem -days 730 -extfile ${OPENSEARCH_CONFIG_DIR}/node.ext
+openssl x509 -req -in ${OPENSEARCH_CONFIG_DIR}/node.csr -CA ${OPENSEARCH_CONFIG_DIR}/root-ca.pem -CAkey ${OPENSEARCH_CONFIG_DIR}/root-ca-key.pem -CAcreateserial -sha256 -out ${OPENSEARCH_CONFIG_DIR}/node.pem -days 7300 -extfile ${OPENSEARCH_CONFIG_DIR}/node.ext
 
 # Cleanup
 rm -f ${OPENSEARCH_CONFIG_DIR}/admin-key-temp.pem ${OPENSEARCH_CONFIG_DIR}/admin.csr ${OPENSEARCH_CONFIG_DIR}/node-key-temp.pem ${OPENSEARCH_CONFIG_DIR}/node.csr ${OPENSEARCH_CONFIG_DIR}/node.ext
