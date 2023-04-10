@@ -5,7 +5,7 @@
 
 #Version variables set by automated scripts
 %define perfsonar_auto_version 5.0.0
-%define perfsonar_auto_relnum 0.b2.8
+%define perfsonar_auto_relnum 0.b2.9
 
 Name:			perfsonar-dashboards
 Version:		%{perfsonar_auto_version}
