@@ -6,7 +6,7 @@
 
 #Version variables set by automated scripts
 %define perfsonar_auto_version 5.0.0
-%define perfsonar_auto_relnum 0.b2.9
+%define perfsonar_auto_relnum 1
 
 Name:			perfsonar-archive
 Version:		%{perfsonar_auto_version}
