@@ -69,9 +69,6 @@ if [ "$1" = "1" ]; then
     systemctl start opensearch.service
     #restart logstash
     systemctl restart logstash.service
-    #stopping perfomance analyzer service to reduce noise in logs
-    systemctl stop opensearch-performance-analyzer.service
-    systemctl disable opensearch-performance-analyzer.service
     #run opensearch post startup script
     bash %{scripts_base}/pselastic_secure_pos.sh
     #run elmond configuration script
