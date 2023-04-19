@@ -310,12 +310,3 @@ echo "LOGSTASH_ELASTIC_USER=${LOGSTASH_USER}" | tee -a $LOGSTASH_SYSCONFIG > /de
 sed -i 's/\(opensearch_output_password=\).*/\1'$LOGSTASH_PASS'/g' $LOGSTASH_SYSCONFIG
 echo "[DONE]"
 echo ""
-
-# 6. Fixes
-#changing the logstash port range to avoid conflict with opendistro-performance-analyzer
-sed -i 's/# \(api.http.port:\) 9600-9700/\1 9601-9700/g' /etc/logstash/logstash.yml
-
-#issue: https://github.com/opendistro-for-elasticsearch/performance-analyzer/issues/229
-echo false > /usr/share/opensearch/data/batch_metrics_enabled.conf
-chown opensearch:opensearch /usr/share/opensearch/data/batch_metrics_enabled.conf
-
