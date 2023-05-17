@@ -40,10 +40,10 @@ cat << EOF
         "_headers": {
             "x-ps-observer": "{% scheduled_by_address %}",
             "content-type": "application/json"${AUTH_HEADER}
-        },
-        "_meta": {
-            "esmond_url": "https://${ARCHIVE_HOST}/esmond/perfsonar/archive/"
         }
+    },
+    "_meta": {
+        "esmond_url": "https://${ARCHIVE_HOST}/esmond/perfsonar/archive/"
     }
 }
 EOF
