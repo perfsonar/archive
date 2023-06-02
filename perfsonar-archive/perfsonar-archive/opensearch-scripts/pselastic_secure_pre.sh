@@ -5,7 +5,7 @@
 if command -v lsb_release &> /dev/null; then 
     OS=$(lsb_release -si)
 elif [ -f /etc/os-release ]; then
-    OS=$(awk -F= '/^NAME/{print $2}' /etc/os-release)
+    OS=$(awk -F= '/^PLATFORM_ID/{print $2}' /etc/os-release)
 else
     OS="Unknown"
 fi
@@ -23,7 +23,7 @@ JVM_FILE=${OPENSEARCH_CONFIG_DIR}/jvm.options
 OPENSEARCH_SECURITY_PLUGIN=/usr/share/opensearch/plugins/opensearch-security
 OPENSEARCH_SECURITY_CONFIG=${OPENSEARCH_CONFIG_DIR}/opensearch-security
 
-if [[ $OS == *"CentOS"* ]]; then
+if [[ $OS == *"platform:el"* ]]; then
     CACERTS_FILE=/etc/pki/java/cacerts
     LOGSTASH_SYSCONFIG=/etc/sysconfig/logstash
 elif [[ $OS == *"Debian"* ]] || [[ $OS == *"Ubuntu"* ]]; then
@@ -134,7 +134,7 @@ else
         PASS=$(tr -dc A-Za-z0-9 </dev/urandom | head -c 20)
         echo "$user $PASS" >> $TEMPFILE
         HASHED_PASS=$(${OPENSEARCH_SECURITY_PLUGIN}/tools/hash.sh -p $PASS | tail -n 1 | sed -e 's/[&\\/]/\\&/g')
-        if [[ $OS == *"CentOS"* ]]; then
+        if [[ $OS == *"platform:el"* ]]; then
             sed -i -e '/^'$user'\:$/,/[^hash.*$]/s/\(hash\: \).*$/\1"'$HASHED_PASS'"/' "${OPENSEARCH_SECURITY_CONFIG}/internal_users.yml"
         elif [[ $OS == *"Debian"* ]] || [[ $OS == *"Ubuntu"* ]]; then
             sed -i -e '/^'$user'\:$/,/[^hash.*$]/      s/\(hash\: \).*$/\1"'$HASHED_PASS'"/' "${OPENSEARCH_SECURITY_CONFIG}/internal_users.yml"
