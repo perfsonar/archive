@@ -9,7 +9,7 @@ Homepage: http://www.perfsonar.net
 Package: perfsonar-archive
 Architecture: all
 Depends: ${shlibs:Depends}, ${misc:Depends}, opensearch, openjdk-11-jdk,
- openssl, jq, perfsonar-logstash, perfsonar-elmond, apache2,
+ openssl, jq, perfsonar-logstash, perfsonar-elmond, apache2, lsb-release,
  apache2-ssl-dev, curl, perfsonar-common
 Description: perfSONAR archive with OpenSearch and LogStash
  A package that installs the perfSONAR Archive based on Logstash and
