@@ -1,3 +1,9 @@
+perfsonar-archive (5.0.2~a2.0-2) perfsonar-5.0; urgency=low
+
+  * Adding lsb-release to dependencies.
+
+ -- Lætitia Delvaux <adelvaux@man.poznan.pl>  Tue, 06 Jun 2023 12:52:39 +0000 
+
 perfsonar-archive (5.0.2-1) perfsonar-5.0; urgency=low
 
   * New upstream version.
