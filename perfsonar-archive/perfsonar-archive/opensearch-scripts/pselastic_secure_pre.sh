@@ -2,10 +2,10 @@
 
 ##  GATHERING INFO
 
-if command -v lsb_release &> /dev/null; then 
-    OS=$(lsb_release -si)
-elif [ -e '/etc/redhat-release' ]; then
+if [ -e '/etc/redhat-release' ]; then
     OS="redhat"
+elif [ -e '/etc/debian_version' ]; then
+    OS="debian"
 else
     OS="Unknown"
 fi
@@ -26,7 +26,7 @@ OPENSEARCH_SECURITY_CONFIG=${OPENSEARCH_CONFIG_DIR}/opensearch-security
 if [[ $OS == "redhat" ]]; then
     CACERTS_FILE=/etc/pki/java/cacerts
     LOGSTASH_SYSCONFIG=/etc/sysconfig/logstash
-elif [[ $OS == *"Debian"* ]] || [[ $OS == *"Ubuntu"* ]]; then
+elif [[ $OS == "debian" ]]; then
     CACERTS_FILE=/usr/share/opensearch/jdk/lib/security/cacerts
     LOGSTASH_SYSCONFIG=/etc/default/logstash
 else
@@ -136,7 +136,7 @@ else
         HASHED_PASS=$(OPENSEARCH_JAVA_HOME=/usr/share/opensearch/jdk ${OPENSEARCH_SECURITY_PLUGIN}/tools/hash.sh -p $PASS | tail -n 1 | sed -e 's/[&\\/]/\\&/g')
         if [[ $OS == "redhat" ]]; then
             sed -i -e '/^'$user'\:$/,/[^hash.*$]/s/\(hash\: \).*$/\1"'$HASHED_PASS'"/' "${OPENSEARCH_SECURITY_CONFIG}/internal_users.yml"
-        elif [[ $OS == *"Debian"* ]] || [[ $OS == *"Ubuntu"* ]]; then
+        elif [[ $OS == "debian" ]]; then
             sed -i -e '/^'$user'\:$/,/[^hash.*$]/      s/\(hash\: \).*$/\1"'$HASHED_PASS'"/' "${OPENSEARCH_SECURITY_CONFIG}/internal_users.yml"
         fi
     done
