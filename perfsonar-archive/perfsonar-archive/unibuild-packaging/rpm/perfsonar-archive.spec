@@ -19,7 +19,6 @@ Source0:		perfsonar-archive-%{version}.tar.gz
 BuildRoot:		%{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 BuildArch:		noarch
 Requires:		opensearch >= 2.1.0
-Requires:       java-11-openjdk
 Requires:       openssl
 Requires:       jq
 Requires:       perfsonar-common
@@ -28,9 +27,6 @@ Requires:       perfsonar-elmond
 Requires:       httpd
 Requires:       mod_ssl
 Requires:       curl
-Requires(post): java-11-openjdk
-Requires(post): openssl
-Requires(post): opensearch
 
 %description
 A package that installs the perfSONAR Archive based on Logstash and Opensearch.
