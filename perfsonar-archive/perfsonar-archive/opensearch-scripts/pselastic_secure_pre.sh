@@ -167,7 +167,7 @@ fi
 PROXY_PASS=$(tr -dc A-Za-z0-9 </dev/urandom | head -c 20)
 htpasswd -bc $LOGSTASH_PROXY_LOGIN_FILE $LOGSTASH_PROXY_USER $PROXY_PASS
 LOGIN_BASE64=$(echo -n "$LOGSTASH_PROXY_USER:$PROXY_PASS" | base64 -i)
-echo "\"Authorization\":\"Basic $LOGIN_BASE64\"" | tee -a $PROXY_AUTH_JSON > /dev/null
+echo "\"Authorization\":\"Basic $LOGIN_BASE64\"" | tee $PROXY_AUTH_JSON > /dev/null
 
 # new users: pscheduler_logstash, pscheduler_reader and pscheduler_writer
 # 1. Create users, generate passwords and save them to file 
