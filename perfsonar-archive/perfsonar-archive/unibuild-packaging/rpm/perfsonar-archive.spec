@@ -28,6 +28,9 @@ Requires:       perfsonar-elmond
 Requires:       httpd
 Requires:       mod_ssl
 Requires:       curl
+Requires(post): java-11-openjdk
+Requires(post): openssl
+Requires(post): opensearch
 
 %description
 A package that installs the perfSONAR Archive based on Logstash and Opensearch.
