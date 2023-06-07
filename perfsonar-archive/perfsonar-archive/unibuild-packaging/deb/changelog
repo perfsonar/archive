@@ -4,6 +4,12 @@ perfsonar-archive (5.0.3~a1.0-1) perfsonar-5.0-snapshot; urgency=low
 
  -- perfSONAR developers <debian@perfsonar.net>  Mon, 05 Jun 2023 12:15:47 -0400
 
+perfsonar-archive (5.0.2-2) perfsonar-5.0; urgency=low
+
+  * Adding lsb-release to dependencies.
+
+ -- Lætitia Delvaux <adelvaux@man.poznan.pl>  Tue, 06 Jun 2023 13:20:48 +0000 
+
 perfsonar-archive (5.0.2-1) perfsonar-5.0; urgency=low
 
   * New upstream version.
