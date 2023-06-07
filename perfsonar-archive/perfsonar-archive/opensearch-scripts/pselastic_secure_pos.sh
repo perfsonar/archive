@@ -5,8 +5,15 @@ OPENSEARCH_SECURITY_PLUGIN=/usr/share/opensearch/plugins/opensearch-security
 OPENSEARCH_SECURITY_CONFIG=${OPENSEARCH_CONFIG_DIR}/opensearch-security
 PASSWORD_FILE=/etc/perfsonar/opensearch/auth_setup.out
 
+#temporary test for el8 fix
+echo "Sleeping until API starts..."
+sleep 30
+echo "Done sleeping"
+
 # Run securityadmin to enact permission changes
+echo "Running securityadmin.sh..."
 OPENSEARCH_JAVA_HOME=/usr/share/opensearch/jdk bash ${OPENSEARCH_SECURITY_PLUGIN}/tools/securityadmin.sh -cd ${OPENSEARCH_SECURITY_CONFIG} -icl -nhnv -cacert ${OPENSEARCH_CONFIG_DIR}/root-ca.pem -cert ${OPENSEARCH_CONFIG_DIR}/admin.pem -key ${OPENSEARCH_CONFIG_DIR}/admin-key.pem
+echo "Done running securityadmin.sh."
 
 # Get password for admin user
 ADMIN_PASS=$(grep -w "admin" $PASSWORD_FILE | head -n 1 | awk '{print $2}')
