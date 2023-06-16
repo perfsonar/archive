@@ -2,10 +2,10 @@
 
 ##  GATHERING INFO
 
-if command -v lsb_release &> /dev/null; then 
-    OS=$(lsb_release -si)
-elif [ -e '/etc/redhat-release' ]; then
+if [ -e '/etc/redhat-release' ]; then
     OS="redhat"
+elif [ -e '/etc/debian_version' ]; then
+    OS="debian"
 else
     OS="Unknown"
 fi
@@ -26,7 +26,7 @@ OPENSEARCH_SECURITY_CONFIG=${OPENSEARCH_CONFIG_DIR}/opensearch-security
 if [[ $OS == "redhat" ]]; then
     CACERTS_FILE=/etc/pki/java/cacerts
     LOGSTASH_SYSCONFIG=/etc/sysconfig/logstash
-elif [[ $OS == *"Debian"* ]] || [[ $OS == *"Ubuntu"* ]]; then
+elif [[ $OS == "debian" ]]; then
     CACERTS_FILE=/usr/share/opensearch/jdk/lib/security/cacerts
     LOGSTASH_SYSCONFIG=/etc/default/logstash
 else
@@ -70,7 +70,7 @@ chown opensearch:opensearch ${OPENSEARCH_CONFIG_DIR}/admin-key.pem ${OPENSEARCH_
 
 # Add to Java cacerts
 openssl x509 -in ${OPENSEARCH_CONFIG_DIR}/root-ca.pem -inform pem -out ${OPENSEARCH_CONFIG_DIR}/root-ca.der -outform der
-keytool -import -alias node -keystore ${CACERTS_FILE} -file ${OPENSEARCH_CONFIG_DIR}/root-ca.der -storepass changeit -noprompt
+/usr/share/opensearch/jdk/bin/keytool -import -alias node -keystore ${CACERTS_FILE} -file ${OPENSEARCH_CONFIG_DIR}/root-ca.der -storepass changeit -noprompt
 
 # Remove old settings
 sed -i '/^plugins.security.ssl.transport.pemcert_filepath:.*/d' $OPENSEARCH_CONFIG_FILE
@@ -133,10 +133,10 @@ else
     egrep -v '^[[:blank:]]' "${OPENSEARCH_SECURITY_CONFIG}/internal_users.yml" | egrep "\:$" | egrep -v '^\_' | sed 's\:\\g' | while read user; do
         PASS=$(tr -dc A-Za-z0-9 </dev/urandom | head -c 20)
         echo "$user $PASS" >> $TEMPFILE
-        HASHED_PASS=$(${OPENSEARCH_SECURITY_PLUGIN}/tools/hash.sh -p $PASS | tail -n 1 | sed -e 's/[&\\/]/\\&/g')
+        HASHED_PASS=$(OPENSEARCH_JAVA_HOME=/usr/share/opensearch/jdk ${OPENSEARCH_SECURITY_PLUGIN}/tools/hash.sh -p $PASS | tail -n 1 | sed -e 's/[&\\/]/\\&/g')
         if [[ $OS == "redhat" ]]; then
             sed -i -e '/^'$user'\:$/,/[^hash.*$]/s/\(hash\: \).*$/\1"'$HASHED_PASS'"/' "${OPENSEARCH_SECURITY_CONFIG}/internal_users.yml"
-        elif [[ $OS == *"Debian"* ]] || [[ $OS == *"Ubuntu"* ]]; then
+        elif [[ $OS == "debian" ]]; then
             sed -i -e '/^'$user'\:$/,/[^hash.*$]/      s/\(hash\: \).*$/\1"'$HASHED_PASS'"/' "${OPENSEARCH_SECURITY_CONFIG}/internal_users.yml"
         fi
     done
@@ -167,7 +167,7 @@ fi
 PROXY_PASS=$(tr -dc A-Za-z0-9 </dev/urandom | head -c 20)
 htpasswd -bc $LOGSTASH_PROXY_LOGIN_FILE $LOGSTASH_PROXY_USER $PROXY_PASS
 LOGIN_BASE64=$(echo -n "$LOGSTASH_PROXY_USER:$PROXY_PASS" | base64 -i)
-echo "\"Authorization\":\"Basic $LOGIN_BASE64\"" | tee -a $PROXY_AUTH_JSON > /dev/null
+echo "\"Authorization\":\"Basic $LOGIN_BASE64\"" | tee $PROXY_AUTH_JSON > /dev/null
 
 # new users: pscheduler_logstash, pscheduler_reader and pscheduler_writer
 # 1. Create users, generate passwords and save them to file 
@@ -179,7 +179,7 @@ else
     # pscheduler_logstash
     echo "[Creating $LOGSTASH_USER user]"
     PASS=$(tr -dc A-Za-z0-9 </dev/urandom | head -c 20)
-    HASHED_PASS=$(${OPENSEARCH_SECURITY_PLUGIN}/tools/hash.sh -p $PASS | tail -n 1)
+    HASHED_PASS=$(OPENSEARCH_JAVA_HOME=/usr/share/opensearch/jdk ${OPENSEARCH_SECURITY_PLUGIN}/tools/hash.sh -p $PASS | tail -n 1)
     echo "$LOGSTASH_USER $PASS" | tee -a $PASSWORD_FILE  > /dev/null
     echo | tee -a $OPENSEARCH_SECURITY_CONFIG/internal_users.yml > /dev/null
     echo "$LOGSTASH_USER:" | tee -a $OPENSEARCH_SECURITY_CONFIG/internal_users.yml > /dev/null
@@ -190,7 +190,7 @@ else
     # pscheduler_reader
     echo "[Creating pscheduler_reader user]"
     PASS=$(tr -dc A-Za-z0-9 </dev/urandom | head -c 20)
-    HASHED_PASS=$(${OPENSEARCH_SECURITY_PLUGIN}/tools/hash.sh -p $PASS | tail -n 1)
+    HASHED_PASS=$(OPENSEARCH_JAVA_HOME=/usr/share/opensearch/jdk ${OPENSEARCH_SECURITY_PLUGIN}/tools/hash.sh -p $PASS | tail -n 1)
     echo "pscheduler_reader $PASS" | tee -a $PASSWORD_FILE  > /dev/null
     echo | tee -a $OPENSEARCH_SECURITY_CONFIG/internal_users.yml > /dev/null
     echo 'pscheduler_reader:' | tee -a $OPENSEARCH_SECURITY_CONFIG/internal_users.yml > /dev/null
@@ -201,7 +201,7 @@ else
     # pscheduler_writer
     echo "[Creating pscheduler_writer user]"
     PASS=$(tr -dc A-Za-z0-9 </dev/urandom | head -c 20)
-    HASHED_PASS=$(${OPENSEARCH_SECURITY_PLUGIN}/tools/hash.sh -p $PASS | tail -n 1)
+    HASHED_PASS=$(OPENSEARCH_JAVA_HOME=/usr/share/opensearch/jdk ${OPENSEARCH_SECURITY_PLUGIN}/tools/hash.sh -p $PASS | tail -n 1)
     echo "pscheduler_writer $PASS" | tee -a $PASSWORD_FILE  > /dev/null
     echo | tee -a $OPENSEARCH_SECURITY_CONFIG/internal_users.yml > /dev/null
     echo 'pscheduler_writer:' | tee -a $OPENSEARCH_SECURITY_CONFIG/internal_users.yml > /dev/null

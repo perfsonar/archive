@@ -19,7 +19,6 @@ Source0:		perfsonar-archive-%{version}.tar.gz
 BuildRoot:		%{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 BuildArch:		noarch
 Requires:		opensearch >= 2.1.0
-Requires:       java-11-openjdk
 Requires:       openssl
 Requires:       jq
 Requires:       perfsonar-common
