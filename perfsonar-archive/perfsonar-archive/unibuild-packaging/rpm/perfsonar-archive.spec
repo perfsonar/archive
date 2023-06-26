@@ -8,6 +8,12 @@
 %define perfsonar_auto_version 5.0.4
 %define perfsonar_auto_relnum 0.a1.0
 
+# defining macros needed by SELinux
+# SELinux policy type - Targeted policy is the default SELinux policy used in Red Hat Enterprise Linux.
+%global selinuxtype targeted
+# default boolean value needs to be changed to enable http proxy for opensearch and logstash
+%global selinuxbooleans httpd_can_network_connect=1
+
 Name:			perfsonar-archive
 Version:		%{perfsonar_auto_version}
 Release:		%{perfsonar_auto_relnum}%{?dist}
@@ -27,6 +33,10 @@ Requires:       perfsonar-elmond
 Requires:       httpd
 Requires:       mod_ssl
 Requires:       curl
+Requires:       selinux-policy-%{selinuxtype}
+Requires(post): selinux-policy-%{selinuxtype}
+BuildRequires:  selinux-policy-devel
+%{?selinux_requires}
 
 %description
 A package that installs the perfSONAR Archive based on Logstash and Opensearch.
@@ -78,6 +88,8 @@ if [ "$1" = "1" ]; then
     #Enable and restart apache for reverse proxy
     systemctl enable httpd
     systemctl restart httpd
+    #set SELinux booleans to allow httpd proxy to work
+    %selinux_set_booleans -s %{selinuxtype} %{selinuxbooleans}
 fi
 
 %preun
@@ -85,6 +97,9 @@ fi
 
 %postun
 %systemd_postun_with_restart opensearch.service
+if [ $1 -eq 0 ]; then
+    %selinux_unset_booleans -s %{selinuxtype} %{selinuxbooleans}
+fi
 
 %files
 %defattr(0644,perfsonar,perfsonar,0755)
