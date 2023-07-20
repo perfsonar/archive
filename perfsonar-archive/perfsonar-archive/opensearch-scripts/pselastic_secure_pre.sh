@@ -263,6 +263,14 @@ else
     echo "      - 'pscheduler*'" | tee -a $OPENSEARCH_SECURITY_CONFIG/roles.yml > /dev/null
     echo "      allowed_actions:" | tee -a $OPENSEARCH_SECURITY_CONFIG/roles.yml > /dev/null
     echo "      - 'write'" | tee -a $OPENSEARCH_SECURITY_CONFIG/roles.yml > /dev/null
+
+    # anonymous_reader => read-only access to the pscheduler indices
+    echo "[Creating opendistro_security_anonymous role]"
+    echo | tee -a $OPENSEARCH_SECURITY_CONFIG/roles.yml > /dev/null
+    echo "opendistro_security_anonymous:" | tee -a $OPENSEARCH_SECURITY_CONFIG/roles.yml > /dev/null
+    echo "  reserved: true" | tee -a $OPENSEARCH_SECURITY_CONFIG/roles.yml > /dev/null
+    echo "  cluster_permissions:" | tee -a $OPENSEARCH_SECURITY_CONFIG/roles.yml > /dev/null
+    echo "    - 'cluster_monitor'" | tee -a $OPENSEARCH_SECURITY_CONFIG/roles.yml > /dev/null
 fi
 echo "[DONE]"
 echo ""
@@ -299,6 +307,14 @@ else
     echo '  reserved: true' | tee -a $OPENSEARCH_SECURITY_CONFIG/roles_mapping.yml > /dev/null
     echo '  users:' | tee -a $OPENSEARCH_SECURITY_CONFIG/roles_mapping.yml > /dev/null
     echo '  - "pscheduler_writer"' | tee -a $OPENSEARCH_SECURITY_CONFIG/roles_mapping.yml > /dev/null
+
+    # anonymous
+    echo "[Mapping anonymous user to anonymous user backend role]"
+    echo | tee -a $OPENSEARCH_SECURITY_CONFIG/roles_mapping.yml > /dev/null
+    echo 'opendistro_security_anonymous:' | tee -a $OPENSEARCH_SECURITY_CONFIG/roles_mapping.yml > /dev/null
+    echo '  reserved: true' | tee -a $OPENSEARCH_SECURITY_CONFIG/roles_mapping.yml > /dev/null
+    echo '  backend_roles:' | tee -a $OPENSEARCH_SECURITY_CONFIG/roles_mapping.yml > /dev/null
+    echo '  - "opendistro_security_anonymous_backendrole"' | tee -a $OPENSEARCH_SECURITY_CONFIG/roles_mapping.yml > /dev/null
 fi
 echo "[DONE]"
 echo ""
