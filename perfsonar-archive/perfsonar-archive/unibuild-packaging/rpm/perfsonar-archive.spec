@@ -36,6 +36,7 @@ Requires:       curl
 Requires:       selinux-policy-%{selinuxtype}
 Requires(post): selinux-policy-%{selinuxtype}
 BuildRequires:  selinux-policy-devel
+BuildRequires:  git
 %{?selinux_requires}
 
 %description
