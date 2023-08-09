@@ -110,6 +110,8 @@ fi
 %{setup_base}/roles/*
 %{setup_base}/users/*
 %{setup_base}/index_template-pscheduler.json
+%{setup_base}/index_template-auditlog.json
+%{setup_base}/index_template-opendistro-ism.json
 %attr(0644, perfsonar, perfsonar) %{httpd_config_base}/apache-opensearch.conf
 # Set to config so users can update auth settings
 %config(noreplace) %attr(0644, perfsonar, perfsonar) %{httpd_config_base}/apache-logstash.conf
