@@ -35,19 +35,37 @@ done
 
 echo "API started!"
 
+
 # Configure index state management (ISM) policy for pscheduler indices
-echo "[Create policy]"
-# Create index policy
-curl -k -u admin:${ADMIN_PASS} -H 'Content-Type: application/json' -X PUT "https://localhost:9200/_plugins/_ism/policies/pscheduler_default_policy" -d "@/usr/lib/perfsonar/archive/config/ilm/install/pscheduler_default_policy.json" 2>/dev/null
-echo -e "\n[Applying policy]"
-# Apply policy to index
-curl -k -u admin:${ADMIN_PASS} -H 'Content-Type: application/json' -X POST "https://localhost:9200/_plugins/_ism/add/pscheduler*" -d '{ "policy_id": "pscheduler_default_policy" }' 2>/dev/null
-echo -e "\n[DONE]"
-echo ""
+# Check if the policy already exists
+policy_status=$(curl -s -o /dev/null -w "%{http_code}" -u admin:${ADMIN_PASS} -k https://localhost:9200/_plugins/_ism/policies/pscheduler_default_policy)
+if [ $policy_status -ne 200 ]; then
+    echo "[Create policy]"
+    # Create index policy
+    curl -k -u admin:${ADMIN_PASS} -H 'Content-Type: application/json' -X PUT "https://localhost:9200/_plugins/_ism/policies/pscheduler_default_policy" -d "@/usr/lib/perfsonar/archive/config/ilm/install/pscheduler_default_policy.json" 2>/dev/null
+    echo -e "\n[Applying policy]"
+    # Apply policy to index
+    curl -k -u admin:${ADMIN_PASS} -H 'Content-Type: application/json' -X POST "https://localhost:9200/_plugins/_ism/add/pscheduler*" -d '{ "policy_id": "pscheduler_default_policy" }' 2>/dev/null
+    echo -e "\n[DONE]"
+    echo ""
+fi
 
 # Configure index template for pscheduler index patterns
 echo "[Create template]"
 # Update template
 curl -k -u admin:${ADMIN_PASS} -H 'Content-Type: application/json' -XPUT "https://localhost:9200/_index_template/pscheduler_default_policy" -d @/usr/lib/perfsonar/archive/config/index_template-pscheduler.json
+curl -k -u admin:${ADMIN_PASS} -H "Content-Type: application/json" -XPUT "https://localhost:9200/pscheduler*/_settings" -d '{"index" : {"number_of_replicas" : 0}}'
+echo -e "\n[DONE]"
+echo ""
+
+# Disabling opensearch internal indexes replicas
+echo "[Update internal indexes]"
+# Configure index template for security-auditlog index pattern
+curl -k -u admin:${ADMIN_PASS} -H 'Content-Type: application/json' -XPUT "https://localhost:9200/_index_template/auditlog" -d @/usr/lib/perfsonar/archive/config/index_template-auditlog.json
+curl -k -u admin:${ADMIN_PASS} -H "Content-Type: application/json" -XPUT "https://localhost:9200/security-auditlog*/_settings" -d '{"index" : {"number_of_replicas" : 0}}'
+
+# Configure index template for opendistro-ism index pattern
+curl -k -u admin:${ADMIN_PASS} -H 'Content-Type: application/json' -XPUT "https://localhost:9200/_index_template/opendistro_ism" -d @/usr/lib/perfsonar/archive/config/index_template-opendistro-ism.json
+curl -k -u admin:${ADMIN_PASS} -H "Content-Type: application/json" -XPUT "https://localhost:9200/.opendistro-ism-managed-index-history*/_settings" -d '{"index" : {"number_of_replicas" : 0}}'
 echo -e "\n[DONE]"
 echo ""
