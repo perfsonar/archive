@@ -79,8 +79,6 @@ if [ "$1" = "1" ]; then
     systemctl start opensearch.service
     #restart logstash
     systemctl restart logstash.service
-    #run opensearch post startup script
-    bash %{scripts_base}/pselastic_secure_pos.sh
     #run elmond configuration script
     bash %{scripts_base}/elmond_configuration.sh
     usermod -a -G opensearch perfsonar
@@ -92,6 +90,8 @@ if [ "$1" = "1" ]; then
     #set SELinux booleans to allow httpd proxy to work
     %selinux_set_booleans -s %{selinuxtype} %{selinuxbooleans}
 fi
+#run opensearch post startup script
+bash %{scripts_base}/pselastic_secure_pos.sh
 
 %preun
 %systemd_preun opensearch.service
