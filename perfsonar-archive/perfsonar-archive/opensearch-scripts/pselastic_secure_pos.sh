@@ -53,7 +53,8 @@ fi
 # Configure index template for pscheduler index patterns
 echo "[Create template]"
 # Update template
-curl -k -u admin:${ADMIN_PASS} -H 'Content-Type: application/json' -XPUT "https://localhost:9200/_index_template/pscheduler_default_policy" -d @/usr/lib/perfsonar/archive/config/index_template-pscheduler.json
+curl -k -u admin:${ADMIN_PASS} -s -H 'Content-Type: application/json' -XPUT "https://localhost:9200/_index_template/pscheduler_default_policy" -d @/usr/lib/perfsonar/archive/config/index_template-pscheduler.json
+echo ""
 status=$(curl -k -u admin:${ADMIN_PASS} -s -o /dev/null -w "%{http_code}" -H "Content-Type: application/json" -XPUT "https://localhost:9200/pscheduler*/_settings" -d '{"index" : {"number_of_replicas" : 0}}')
 if [ $status -eq 200 ]; then
     echo "[Index pscheduler updated successfully]"
@@ -64,14 +65,16 @@ echo ""
 # Disabling opensearch internal indexes replicas
 echo "[Update internal indexes]"
 # Configure index template for security-auditlog index pattern
-curl -k -u admin:${ADMIN_PASS} -H 'Content-Type: application/json' -XPUT "https://localhost:9200/_index_template/auditlog" -d @/usr/lib/perfsonar/archive/config/index_template-auditlog.json
+curl -k -u admin:${ADMIN_PASS} -s -H 'Content-Type: application/json' -XPUT "https://localhost:9200/_index_template/auditlog" -d @/usr/lib/perfsonar/archive/config/index_template-auditlog.json
+echo ""
 status=$(curl -k -u admin:${ADMIN_PASS} -s -o /dev/null -w "%{http_code}" -H "Content-Type: application/json" -XPUT "https://localhost:9200/security-auditlog*/_settings" -d '{"index" : {"number_of_replicas" : 0}}')
 if [ $status -eq 200 ]; then
     echo "[Index security-auditlog updated successfully]"
 fi
 
 # Configure index template for opendistro-ism index pattern
-curl -k -u admin:${ADMIN_PASS} -H 'Content-Type: application/json' -XPUT "https://localhost:9200/_index_template/opendistro_ism" -d @/usr/lib/perfsonar/archive/config/index_template-opendistro-ism.json
+curl -k -u admin:${ADMIN_PASS} -s -H 'Content-Type: application/json' -XPUT "https://localhost:9200/_index_template/opendistro_ism" -d @/usr/lib/perfsonar/archive/config/index_template-opendistro-ism.json
+echo ""
 status=$(curl -k -u admin:${ADMIN_PASS} -s -o /dev/null -w "%{http_code}" -H "Content-Type: application/json" -XPUT "https://localhost:9200/.opendistro-ism-managed-index-history*/_settings" -d '{"index" : {"number_of_replicas" : 0}}')
 if [ $status -eq 200 ]; then
     echo "[Index opendistro-ism-managed-index-history updated successfully]"
