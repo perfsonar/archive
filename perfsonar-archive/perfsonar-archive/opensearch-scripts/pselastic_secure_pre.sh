@@ -325,7 +325,16 @@ echo ""
 # 5. Configure logstash to use pscheduler_logstash user/password
 echo "[Configure logstash]"
 LOGSTASH_PASS=$(grep $LOGSTASH_USER $PASSWORD_FILE | head -n 1 | awk '{print $2}')
-echo "LOGSTASH_ELASTIC_USER=${LOGSTASH_USER}" | tee -a $LOGSTASH_SYSCONFIG > /dev/null
-sed -i 's/\(opensearch_output_password=\).*/\1'$LOGSTASH_PASS'/g' $LOGSTASH_SYSCONFIG
+grep "opensearch" $LOGSTASH_SYSCONFIG > /dev/null
+if [ $? -eq 0 ]; then
+    sed -i 's/\(opensearch_output_password=\).*/\1'$LOGSTASH_PASS'/g' $LOGSTASH_SYSCONFIG   
+else
+    echo '## Logstash environment variables.' | tee -a $LOGSTASH_SYSCONFIG  > /dev/null
+    echo 'log_level=info' | tee -a $LOGSTASH_SYSCONFIG  > /dev/null
+    echo 'opensearch_output_host=https://localhost:9200' | tee -a $LOGSTASH_SYSCONFIG  > /dev/null
+    echo 'opensearch_output_user=pscheduler_logstash' | tee -a $LOGSTASH_SYSCONFIG  > /dev/null
+    echo 'opensearch_output_password='$LOGSTASH_PASS | tee -a $LOGSTASH_SYSCONFIG  > /dev/null
+    echo 'XPACK_MONITORING_ENABLED=False' | tee -a $LOGSTASH_SYSCONFIG  > /dev/null
+fi
 echo "[DONE]"
 echo ""
