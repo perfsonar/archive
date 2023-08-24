@@ -9,9 +9,6 @@
           {
             "index_priority": {
               "priority": 100
-            },
-            "rollover": {
-              "min_index_age": "7d"
             }
           }
         ],
