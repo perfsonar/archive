@@ -16,7 +16,7 @@
           {
             "state_name": "warm",
             "conditions": {
-              "min_index_age": "25h"
+              "min_index_age": "7d"
             }
           }
         ]
