@@ -24,7 +24,7 @@ COPY . /app
 
 #Build RPM
 RUN cd /app && \
-    make dist && \
+    #make dist && \
     # opensearch and logstash
     mv perfsonar-archive-*.tar.gz ~/rpmbuild/SOURCES/ && \
     rpmbuild -bs perfsonar-archive.spec && \
