@@ -55,6 +55,8 @@ case "$1" in
         else
             #upgrade
             service opensearch restart
+            # Opensearch post startup script
+            bash /usr/lib/perfsonar/archive/perfsonar-scripts/pselastic_secure_pos.sh
         fi
     ;;
 
