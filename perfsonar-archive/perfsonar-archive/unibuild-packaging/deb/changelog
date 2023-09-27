@@ -1,8 +1,8 @@
-perfsonar-archive (5.0.5~a1.0-1) perfsonar-5.0-snapshot; urgency=low
+perfsonar-archive (5.0.5-1) perfsonar-5.0; urgency=low
 
   * New upstream version.
 
- -- perfSONAR developers <debian@perfsonar.net>  Wed, 26 Jul 2023 11:50:16 -0400
+ -- perfSONAR developers <debian@perfsonar.net>  Wed, 27 Sep 2023 10:32:57 -0400
 
 perfsonar-archive (5.0.4-1) perfsonar-5.0; urgency=low
 
