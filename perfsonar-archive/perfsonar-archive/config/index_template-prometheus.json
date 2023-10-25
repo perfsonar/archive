@@ -1,0 +1,20 @@
+{
+    "index_patterns": [
+      "prometheus_*"
+    ],
+    "template": {
+      "settings": {
+        "index.mapping.total_fields.limit": "10000",
+        "index.refresh_interval": "10s",
+        "index.number_of_shards": "1",
+        "index.number_of_replicas": "0"
+      },
+      "mappings": {
+        "properties": {}
+      }
+    },
+    "data_stream": {},
+    "composed_of": [],
+    "priority": 0,
+    "name": "prometheus_template"
+  }

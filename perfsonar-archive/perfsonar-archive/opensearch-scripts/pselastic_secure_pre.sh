@@ -218,7 +218,7 @@ fi
 echo "[DONE]"
 echo ""
 
-# 2. Create roles
+# 2. Create roles - Note: updates to roles happen in post
 echo "[Creating pscheduler roles]"
 grep "pscheduler" $OPENSEARCH_SECURITY_CONFIG/roles.yml > /dev/null
 if [ $? -eq 0 ]; then
@@ -234,6 +234,7 @@ else
     echo "  index_permissions:" | tee -a $OPENSEARCH_SECURITY_CONFIG/roles.yml > /dev/null
     echo "    - index_patterns:" | tee -a $OPENSEARCH_SECURITY_CONFIG/roles.yml > /dev/null
     echo "      - 'pscheduler_*'" | tee -a $OPENSEARCH_SECURITY_CONFIG/roles.yml > /dev/null
+    echo "      - 'prometheus_*'" | tee -a $OPENSEARCH_SECURITY_CONFIG/roles.yml > /dev/null
     echo "      allowed_actions:" | tee -a $OPENSEARCH_SECURITY_CONFIG/roles.yml > /dev/null
     echo "      - 'write'" | tee -a $OPENSEARCH_SECURITY_CONFIG/roles.yml > /dev/null
     echo "      - 'read'" | tee -a $OPENSEARCH_SECURITY_CONFIG/roles.yml > /dev/null
@@ -252,6 +253,7 @@ else
     echo "  index_permissions:" | tee -a $OPENSEARCH_SECURITY_CONFIG/roles.yml > /dev/null
     echo "    - index_patterns:" | tee -a $OPENSEARCH_SECURITY_CONFIG/roles.yml > /dev/null
     echo "      - 'pscheduler*'" | tee -a $OPENSEARCH_SECURITY_CONFIG/roles.yml > /dev/null
+    echo "      - 'prometheus*'" | tee -a $OPENSEARCH_SECURITY_CONFIG/roles.yml > /dev/null
     echo "      allowed_actions:" | tee -a $OPENSEARCH_SECURITY_CONFIG/roles.yml > /dev/null
     echo "      - 'read'" | tee -a $OPENSEARCH_SECURITY_CONFIG/roles.yml > /dev/null
     echo "      - 'indices:admin/mappings/get'" | tee -a $OPENSEARCH_SECURITY_CONFIG/roles.yml > /dev/null
@@ -264,6 +266,7 @@ else
     echo "  index_permissions:" | tee -a $OPENSEARCH_SECURITY_CONFIG/roles.yml > /dev/null
     echo "    - index_patterns:" | tee -a $OPENSEARCH_SECURITY_CONFIG/roles.yml > /dev/null
     echo "      - 'pscheduler*'" | tee -a $OPENSEARCH_SECURITY_CONFIG/roles.yml > /dev/null
+    echo "      - 'prometheus*'" | tee -a $OPENSEARCH_SECURITY_CONFIG/roles.yml > /dev/null
     echo "      allowed_actions:" | tee -a $OPENSEARCH_SECURITY_CONFIG/roles.yml > /dev/null
     echo "      - 'write'" | tee -a $OPENSEARCH_SECURITY_CONFIG/roles.yml > /dev/null
 
