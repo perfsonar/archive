@@ -109,6 +109,7 @@ fi
 %{setup_base}/ilm/*
 %{setup_base}/roles/*
 %{setup_base}/users/*
+%{setup_base}/index_template-prometheus.json
 %{setup_base}/index_template-pscheduler.json
 %{setup_base}/index_template-auditlog.json
 %{setup_base}/index_template-opendistro-ism.json
