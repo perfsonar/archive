@@ -49,7 +49,7 @@
       }
     ],
     "ism_template": {
-      "index_patterns": ["pscheduler*","prometheus*"],
+      "index_patterns": ["pscheduler*"],
       "priority": 100
     }
   }

@@ -15,6 +15,5 @@
     },
     "data_stream": {},
     "composed_of": [],
-    "priority": 0,
-    "name": "prometheus_template"
+    "priority": 0
   }
