@@ -6,7 +6,7 @@
 
 #Version variables set by automated scripts
 %define perfsonar_auto_version 5.0.6
-%define perfsonar_auto_relnum 0.a1.0
+%define perfsonar_auto_relnum 1
 
 # defining macros needed by SELinux
 # SELinux policy type - Targeted policy is the default SELinux policy used in Red Hat Enterprise Linux.
