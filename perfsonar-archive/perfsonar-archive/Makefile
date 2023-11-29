@@ -24,5 +24,6 @@ endif
 	cp -r opensearch-scripts/* ${PERFSONAR-ROOTPATH}/perfsonar-scripts
 	cp -r config/systemd/* ${SYSTEMD-CONFIGPATH}/
 	cp -r config/* ${PERFSONAR-ROOTPATH}/config
+	rm -rf ${PERFSONAR-ROOTPATH}/config/systemd
 	mv ${PERFSONAR-ROOTPATH}/config/apache/* ${HTTPD-CONFIGPATH}/
 	rm -rf ${PERFSONAR-ROOTPATH}/config/apache
