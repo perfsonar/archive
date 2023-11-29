@@ -3,6 +3,7 @@
 %define scripts_base        %{archive_base}/perfsonar-scripts
 %define setup_base          %{archive_base}/config
 %define httpd_config_base   /etc/httpd/conf.d
+%define systemd_config_base /etc/systemd/system
 
 #Version variables set by automated scripts
 %define perfsonar_auto_version 5.0.7
@@ -48,7 +49,7 @@ A package that installs the perfSONAR Archive based on Logstash and Opensearch.
 %build
 
 %install
-make PERFSONAR-ROOTPATH=%{buildroot}/%{archive_base} HTTPD-CONFIGPATH=%{buildroot}/%{httpd_config_base} install
+make PERFSONAR-ROOTPATH=%{buildroot}/%{archive_base} HTTPD-CONFIGPATH=%{buildroot}/%{httpd_config_base} SYSTEMDD-CONFIGPATH=%{buildroot}/%{systemd_config_base} install
 
 %clean
 rm -rf %{buildroot}
@@ -89,6 +90,9 @@ if [ "$1" = "1" ]; then
     systemctl restart httpd
     #set SELinux booleans to allow httpd proxy to work
     %selinux_set_booleans -s %{selinuxtype} %{selinuxbooleans}
+else
+    #reload daemons to make sure systemd override applies
+    systemctl daemon-reload
 fi
 #run opensearch post startup script
 bash %{scripts_base}/pselastic_secure_pos.sh
@@ -113,6 +117,8 @@ fi
 %{setup_base}/index_template-auditlog.json
 %{setup_base}/index_template-opendistro-ism.json
 %attr(0644, perfsonar, perfsonar) %{httpd_config_base}/apache-opensearch.conf
+#set to config so users can modify settings if they need to
+%config(noreplace) %attr(0644, perfsonar, perfsonar) %{systemd_config_base}/opensearch.service.d/override.conf
 # Set to config so users can update auth settings
 %config(noreplace) %attr(0644, perfsonar, perfsonar) %{httpd_config_base}/apache-logstash.conf
 
