@@ -49,7 +49,7 @@ A package that installs the perfSONAR Archive based on Logstash and Opensearch.
 %build
 
 %install
-make PERFSONAR-ROOTPATH=%{buildroot}/%{archive_base} HTTPD-CONFIGPATH=%{buildroot}/%{httpd_config_base} SYSTEMDD-CONFIGPATH=%{buildroot}/%{systemd_config_base} install
+make PERFSONAR-ROOTPATH=%{buildroot}/%{archive_base} HTTPD-CONFIGPATH=%{buildroot}/%{httpd_config_base} SYSTEMD-CONFIGPATH=%{buildroot}/%{systemd_config_base} install
 
 %clean
 rm -rf %{buildroot}
