@@ -54,7 +54,7 @@ case "$1" in
             fi
         else
             #upgrade
-            systemctl opensearch daemon-reload
+            systemctl daemon-reload
             systemctl opensearch restart
             # Opensearch post startup script
             bash /usr/lib/perfsonar/archive/perfsonar-scripts/pselastic_secure_pos.sh

@@ -119,6 +119,7 @@ fi
 %attr(0644, perfsonar, perfsonar) %{httpd_config_base}/apache-opensearch.conf
 #set to config so users can modify settings if they need to
 %config(noreplace) %attr(0644, perfsonar, perfsonar) %{systemd_config_base}/opensearch.service.d/override.conf
+%config(noreplace) %attr(0644, perfsonar, perfsonar) %{systemd_config_base}/logstash.service.d/override.conf
 # Set to config so users can update auth settings
 %config(noreplace) %attr(0644, perfsonar, perfsonar) %{httpd_config_base}/apache-logstash.conf
 
