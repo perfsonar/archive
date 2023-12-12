@@ -19,7 +19,7 @@ case "$1" in
             # if new install, then enable
             systemctl enable opensearch
             systemctl enable logstash
-            systemctl opensearch stop
+            systemctl stop opensearch
 
             # fix directory permissions
             chmod g+ws /etc/opensearch/
@@ -30,8 +30,8 @@ case "$1" in
             sed -i 's|^#OPENSEARCH_JAVA_OPTS=|OPENSEARCH_JAVA_OPTS="-Djna.tmpdir=/var/lib/opensearch/tmp"|' /etc/default/opensearch
 
             # Start services
-            systemctl opensearch start
-            systemctl logstash restart
+            systemctl start opensearch
+            systemctl restart logstash
 
             # Opensearch post startup script
             bash /usr/lib/perfsonar/archive/perfsonar-scripts/pselastic_secure_pos.sh
@@ -39,7 +39,7 @@ case "$1" in
             bash /usr/lib/perfsonar/archive/perfsonar-scripts/elmond_configuration.sh
             usermod -a -G opensearch perfsonar
             # Restart Elmond
-            systemctl elmond restart
+            systemctl restart elmond
 
             # Apache setup
             if [ -e /usr/share/apache2/apache2-maintscript-helper ]; then
@@ -55,7 +55,7 @@ case "$1" in
         else
             #upgrade
             systemctl daemon-reload
-            systemctl opensearch restart
+            systemctl restart opensearch
             # Opensearch post startup script
             bash /usr/lib/perfsonar/archive/perfsonar-scripts/pselastic_secure_pos.sh
         fi
