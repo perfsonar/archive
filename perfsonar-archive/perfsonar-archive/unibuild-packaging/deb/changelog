@@ -2,7 +2,7 @@ perfsonar-archive (5.0.7-2) perfsonar-5.0; urgency=low
 
   * Using systemctl calls instead of service calls.
 
- -- Lætitia Delvaux <adelvaux@man.poznan.pl>  Tue, 12 Dec 2023 14:14:38 +0100 
+ -- Lætitia Delvaux <adelvaux@man.poznan.pl>  Tue, 12 Dec 2023 14:36:51 +0100 
 
 perfsonar-archive (5.0.7-1) perfsonar-5.0; urgency=low
 
