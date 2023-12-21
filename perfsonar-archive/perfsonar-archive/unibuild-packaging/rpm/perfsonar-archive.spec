@@ -51,6 +51,7 @@ A package that installs the perfSONAR Archive based on Logstash and Opensearch.
 
 %install
 make PERFSONAR-ROOTPATH=%{buildroot}/%{archive_base} HTTPD-CONFIGPATH=%{buildroot}/%{httpd_config_base} SYSTEMD-CONFIGPATH=%{buildroot}/%{systemd_config_base} install
+mkdir -p %{buildroot}/%{install_base}/logstash/prometheus_pipeline/
 install -m 0644 config/01-input-local_prometheus.conf %{buildroot}/%{install_base}/logstash/prometheus_pipeline/
 rm -f %{buildroot}/%{setup_base}/01-input-local_prometheus.conf
 
