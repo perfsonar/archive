@@ -7,4 +7,5 @@ config/index_template-opendistro-ism.json /usr/lib/perfsonar/archive/config/
 config/apache/* /etc/apache2/conf-available/
 config/systemd/opensearch.service.d/override.conf /etc/systemd/system/opensearch.service.d/
 config/systemd/logstash.service.d/override.conf /etc/systemd/system/logstash.service.d/
+config/01-input-local_prometheus.conf /usr/lib/perfsonar/logstash/prometheus_pipeline/
 opensearch-scripts/* /usr/lib/perfsonar/archive/perfsonar-scripts/

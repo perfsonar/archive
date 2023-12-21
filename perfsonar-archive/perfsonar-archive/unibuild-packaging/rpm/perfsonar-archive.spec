@@ -31,6 +31,7 @@ Requires:       jq
 Requires:       perfsonar-common
 Requires:       perfsonar-logstash
 Requires:       perfsonar-elmond
+Requires:       perfsonar-host-metrics
 Requires:       httpd
 Requires:       mod_ssl
 Requires:       curl
@@ -50,6 +51,8 @@ A package that installs the perfSONAR Archive based on Logstash and Opensearch.
 
 %install
 make PERFSONAR-ROOTPATH=%{buildroot}/%{archive_base} HTTPD-CONFIGPATH=%{buildroot}/%{httpd_config_base} SYSTEMD-CONFIGPATH=%{buildroot}/%{systemd_config_base} install
+install -m 0644 config/01-input-local_prometheus.conf %{buildroot}/%{install_base}/logstash/prometheus_pipeline/
+rm -f %{buildroot}/%{setup_base}/01-input-local_prometheus.conf
 
 %clean
 rm -rf %{buildroot}
@@ -117,6 +120,7 @@ fi
 %{setup_base}/index_template-pscheduler.json
 %{setup_base}/index_template-auditlog.json
 %{setup_base}/index_template-opendistro-ism.json
+%attr(0644,root,root) %{install_base}/logstash/prometheus_pipeline/01-input-local_prometheus.conf
 %attr(0644, perfsonar, perfsonar) %{httpd_config_base}/apache-opensearch.conf
 #set to config so users can modify settings if they need to
 %config(noreplace) %attr(0644, perfsonar, perfsonar) %{systemd_config_base}/opensearch.service.d/override.conf
