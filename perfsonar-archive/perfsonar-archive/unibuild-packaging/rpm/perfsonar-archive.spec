@@ -121,7 +121,7 @@ fi
 %{setup_base}/index_template-pscheduler.json
 %{setup_base}/index_template-auditlog.json
 %{setup_base}/index_template-opendistro-ism.json
-%attr(0644,root,root) %{install_base}/logstash/prometheus_pipeline/01-input-local_prometheus.conf
+%attr(0644,perfsonar,perfsonar) %{install_base}/logstash/prometheus_pipeline/01-input-local_prometheus.conf
 %attr(0644, perfsonar, perfsonar) %{httpd_config_base}/apache-opensearch.conf
 #set to config so users can modify settings if they need to
 %config(noreplace) %attr(0644, perfsonar, perfsonar) %{systemd_config_base}/opensearch.service.d/override.conf
