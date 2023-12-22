@@ -110,3 +110,10 @@ if [ $status -eq 200 ]; then
 fi
 echo -e "\n[DONE]"
 echo ""
+
+#Determine if we need to enable prometheus pipeline
+grep -q prometheus_pipeline /etc/logstash/pipelines.yml
+if [ $? -eq 1 ]; then
+    /usr/lib/perfsonar/logstash/scripts/enable_prometheus_pipeline.py
+    systemctl restart logstash
+fi 
