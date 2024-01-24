@@ -1,6 +1,7 @@
 perfsonar-archive (5.1.0~a1.0-1) perfsonar-5.1-snapshot; urgency=low
 
   * New upstream version.
+  * Depending on openjdk-17-jdk as alternative to 11 to support Debian 12.
 
  -- Lætitia Delvaux <adelvaux@man.poznan.pl>  Tue, 18 Apr 2023 23:13:17 +0200
 
