@@ -66,7 +66,7 @@ openssl x509 -req -in ${OPENSEARCH_CONFIG_DIR}/node.csr -CA ${OPENSEARCH_CONFIG_
 
 # Cleanup
 rm -f ${OPENSEARCH_CONFIG_DIR}/admin-key-temp.pem ${OPENSEARCH_CONFIG_DIR}/admin.csr ${OPENSEARCH_CONFIG_DIR}/node-key-temp.pem ${OPENSEARCH_CONFIG_DIR}/node.csr ${OPENSEARCH_CONFIG_DIR}/node.ext
-chown opensearch:opensearch ${OPENSEARCH_CONFIG_DIR}/admin-key.pem ${OPENSEARCH_CONFIG_DIR}/admin.pem ${OPENSEARCH_CONFIG_DIR}/node-key.pem ${OPENSEARCH_CONFIG_DIR}/node.pem ${OPENSEARCH_CONFIG_DIR}/root-ca-key.pem ${OPENSEARCH_CONFIG_DIR}/root-ca.pem ${OPENSEARCH_CONFIG_DIR}/root-ca.srl
+chown opensearch:opensearch ${OPENSEARCH_CONFIG_DIR}/admin-key.pem ${OPENSEARCH_CONFIG_DIR}/admin.pem ${OPENSEARCH_CONFIG_DIR}/node-key.pem ${OPENSEARCH_CONFIG_DIR}/node.pem ${OPENSEARCH_CONFIG_DIR}/root-ca-key.pem ${OPENSEARCH_CONFIG_DIR}/root-ca.pem
 
 # Add to Java cacerts
 openssl x509 -in ${OPENSEARCH_CONFIG_DIR}/root-ca.pem -inform pem -out ${OPENSEARCH_CONFIG_DIR}/root-ca.der -outform der
