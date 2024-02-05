@@ -116,12 +116,9 @@ echo -e '\n######## End OpenSearch Security PerfSONAR Configuration ########' | 
 
 ## Specify initial and maximum JVM heap sizes.
 
-HALF_MEM=$(free --giga | grep Mem: | awk '{ print int($2/2) }')
-if [ "$HALF_MEM" -gt "8" ]; then
-    HALF_MEM="8"
-fi
-sed -i "s/^-Xms.*/-Xms${HALF_MEM}g/g" $JVM_FILE
-sed -i "s/^-Xmx.*/-Xmx${HALF_MEM}g/g" $JVM_FILE
+HALF_MEM=$(free --mega | awk '$1 == "Mem:" { half=int(($2/2)+0.5); print (half > 8192) ? 8192 : half }')
+sed -i "s/^-Xms.*/-Xms${HALF_MEM}m/g" $JVM_FILE
+sed -i "s/^-Xmx.*/-Xmx${HALF_MEM}m/g" $JVM_FILE
 
 # Give execute permission to opensearch hash script
 chmod +x ${OPENSEARCH_SECURITY_PLUGIN}/tools/hash.sh
