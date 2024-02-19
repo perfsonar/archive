@@ -4,8 +4,8 @@
 %define httpd_config_base   /etc/httpd/conf.d
 
 #Version variables set by automated scripts
-%define perfsonar_auto_version 5.0.8
-%define perfsonar_auto_relnum 1
+%define perfsonar_auto_version 5.0.9
+%define perfsonar_auto_relnum 0.a1.0
 
 Name:			perfsonar-dashboards
 Version:		%{perfsonar_auto_version}
