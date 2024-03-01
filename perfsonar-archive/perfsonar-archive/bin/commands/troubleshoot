@@ -97,12 +97,21 @@ def http_check(url, label, method="get", data={}, headers={}, auth=None, fail_ms
 ###########
 # Service checks
 
+#Determine if host is local or not
+#NOTE: This is far from perfect but should satisfy most cases without jumping through a bunch of hoops. 
+is_localhost = False
+if args.host.startswith("localhost") or args.host.startswith("127.0.0.") or args.host == "::1":
+    is_localhost = True
+#Format IPv6
+if ":" in args.host and not args.host.startswith("["):
+    args.host = "[{}]".format(args.host.rstrip(']')) #strip in case they just forgot opening
+
 #Check localhost settings
-if args.host == "localhost":
+if is_localhost:
     systemd_running("opensearch", "OpenSearch")
     systemd_running("logstash", "Logstash")
-    http_check("https://localhost:9200", "OpenSearch API (Localhost)")
-    http_check("http://localhost:11283", "Logstash Endpoint (Localhost)")
+    http_check("https://{}:9200".format(args.host), "OpenSearch API (Localhost)")
+    http_check("http://{}:11283".format(args.host), "Logstash Endpoint (Localhost)")
 
 #Prep for remote checks
 opensearch_url="https://{}/opensearch".format(args.host)
@@ -114,7 +123,7 @@ http_check(opensearch_url, "OpenSearch API (HTTPS Proxy)")
 
 #check logstash api status with auth
 auth_headers = None
-if not args.skip_logstash_proxy and args.host == "localhost" and os.path.isfile(logstash_proxy_auth_file):
+if not args.skip_logstash_proxy and is_localhost and os.path.isfile(logstash_proxy_auth_file):
     status_row = CLIStatusRow("Logstash Proxy Credentials", quiet=args.quiet)
     try:
         auth_headers = None
@@ -127,7 +136,7 @@ if not args.skip_logstash_proxy and args.host == "localhost" and os.path.isfile(
         print(e)
         exit(1)
 #skip this check if cli opt or we are on localhost with no auth info (note that toolkit actually skips proxy and talks to localhost, so this auth info is only applicable if copied between hosts)
-if (not args.skip_logstash_proxy) and (args.host != "localhost" or auth_headers is not None):
+if (not args.skip_logstash_proxy) and ((not is_localhost) or auth_headers is not None):
     fail_msg = None
     if auth_headers:
         fail_msg = """
@@ -142,7 +151,7 @@ If you think this check should be ignored for one of the above reasons, you can 
     http_check(logstash_url, "Logstash Endpoint (HTTPS Proxy)", headers=auth_headers, fail_msg=fail_msg)
 
 # Logstash->OpenSearch checks
-if args.host == "localhost":
+if is_localhost:
     # Load Logstash->OpenSearch Credentials
     status_row = CLIStatusRow("Logstash->OpenSearch Credentials", quiet=args.quiet)
     auth = None
