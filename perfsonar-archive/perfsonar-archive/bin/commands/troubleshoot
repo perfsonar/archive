@@ -1,3 +1,197 @@
-#!/usr/bin/env python3
+#!/usr/bin/python3
 
-print("Hello world")
+import argparse
+import json
+import os
+import requests
+from requests.auth import HTTPBasicAuth
+requests.packages.urllib3.disable_warnings() 
+import sys
+
+###########
+# Utility classes
+'''
+Common colors and style characters used on the terminal
+'''
+class CLITextStyles:
+    OKGREEN = '\033[92m'
+    FAIL = '\033[91m'
+    BOLD = '\033[1m'
+    RESET = '\033[0m'
+
+'''
+Displays result of a stage as a row
+Example: MESSAGE ..... STATUS
+'''
+class CLIStatusRow:
+
+    def __init__(self, msg="", quiet=False, separator=" ...... "):
+        self.quiet = quiet
+        if not quiet:
+            print("{}{}".format(msg, separator), end="")
+
+    def ok(self):
+        if not self.quiet:
+            print("{}{}OK{}".format(CLITextStyles.BOLD, CLITextStyles.OKGREEN, CLITextStyles.RESET))
+
+    def fail(self):
+        if not self.quiet:
+            print("{}{}FAIL{}".format(CLITextStyles.BOLD, CLITextStyles.FAIL, CLITextStyles.RESET))
+
+###########
+# Parse command-line arguments
+parser = argparse.ArgumentParser(
+                    prog='troubleshoot',
+                    description='Troubleshoot a perfSONAR archive by checking for common issues with Opensearch and Logstash'
+                    )
+parser.add_argument('--host', dest='host', action='store', default="localhost", help='The host to troubleshoot. If not set then defaultst to localhost. Setting this also disables any systemd checks.')
+parser.add_argument('--quiet', '-q', dest='quiet', action='store_true', help='Suppress output to stdout and stderr')
+parser.add_argument('--skip-logstash-proxy', dest='skip_logstash_proxy', action='store_true', help='Skips Logstash proxy checks. Useful if testing from host that will not authenticate with Logstash.')
+parser.add_argument('--skip-opensearch-data', dest='skip_opensearch_data', action='store_true', help='Skips check to see if Opensearch has any data. Useful if testing a fresh archive that you do not yet expect to have data.')
+args = parser.parse_args()
+
+###########
+# Utility functions
+def fail_check(msg, status_row=None, code=1):
+    if status_row:
+        status_row.fail()
+    print(msg, file=sys.stderr)
+    exit(code)
+
+def systemd_running(service, label):
+    status_row = CLIStatusRow("{} running".format(label), quiet=args.quiet)
+    status = os.system("systemctl is-active -q {}".format(service))
+    if status == 0:
+        status_row.ok()
+    else:
+        fail_check("Service {0} is not running according to systemctl. See 'systemctl status {0}' for more details".format(service), status_row=status_row)
+
+def http_check(url, label, method="get", data={}, headers={}, auth=None, fail_msg=""):
+        '''
+        General function for sending HTTP requests and handling errors
+        '''
+        if fail_msg:
+            fail_msg = "\n\n{}".format(fail_msg)
+        status_row = CLIStatusRow(label, quiet=args.quiet)
+        try:
+            r = None
+            if method == "get":
+                r = requests.get(url, headers=headers, auth=auth, verify=False)
+            elif method == "post":
+                r = requests.post(url, json=data, headers=headers, auth=auth, verify=False)
+            elif method == "put":
+                r = requests.put(url, json=data, headers=headers, auth=auth, verify=False)
+            else:
+                return None, "Invalid method specified."
+            r.raise_for_status()
+            status_row.ok()
+        except requests.exceptions.HTTPError as err:
+            fail_check("HTTP Error - {}{}".format(err, fail_msg), status_row=status_row)
+        except requests.exceptions.Timeout as err:
+            fail_check("Timeout Error - {}{}".format(err, fail_msg), status_row=status_row)
+        except requests.exceptions.RequestException as err:
+            fail_check("Request Error - {}{}".format(err, fail_msg), status_row=status_row)
+        except:
+            fail_check("General exception trying to contact {}{}".format(url, fail_msg), status_row=status_row)
+
+###########
+# Service checks
+
+#Check localhost settings
+if args.host == "localhost":
+    systemd_running("opensearch", "OpenSearch")
+    systemd_running("logstash", "Logstash")
+    http_check("https://localhost:9200", "OpenSearch API (Localhost)")
+    http_check("http://localhost:11283", "Logstash Endpoint (Localhost)")
+
+#Prep for remote checks
+opensearch_url="https://{}/opensearch".format(args.host)
+logstash_url="https://{}/logstash".format(args.host)
+logstash_proxy_auth_file = "/etc/perfsonar/logstash/proxy_auth.json"
+
+#check opensearch api status
+http_check(opensearch_url, "OpenSearch API (HTTPS Proxy)")
+
+#check logstash api status with auth
+auth_headers = None
+if not args.skip_logstash_proxy and args.host == "localhost" and os.path.isfile(logstash_proxy_auth_file):
+    status_row = CLIStatusRow("Logstash Proxy Credentials", quiet=args.quiet)
+    try:
+        auth_headers = None
+        with open(logstash_proxy_auth_file) as auth_file:
+            auth_headers = json.loads("{{{}}}".format(auth_file.read()))
+        status_row.ok()
+    except Exception as e:
+        status_row.fail()
+        print("Unable to load the credentials that pscheduler will use to authenticate to Logstash. It is possible something went wrong with the perfsonar-archive installation. More details in error below:")
+        print(e)
+        exit(1)
+#skip this check if cli opt or we are on localhost with no auth info (note that toolkit actually skips proxy and talks to localhost, so this auth info is only applicable if copied between hosts)
+if (not args.skip_logstash_proxy) and (args.host != "localhost" or auth_headers is not None):
+    fail_msg = None
+    if auth_headers:
+        fail_msg = """
+This check tried to authenticate using credentials in {}. Something must have gone wrong during installation to cause incorrect auth credentials. You can consider the following actions:
+1. If this is a perfsonar-toolkit host with only the local pscheduler instance writing to it, than you can likely ignore this message, since it does not authenticate via the HTTP proxy and goes directly to Logstash on localhost.
+2. If this is a central archive this is only a concern if you have you have shared the pscheduler_logstash username and password with other measurement hosts. You likely need to regnerate the password by re-installing the perfsonar-archive package.
+
+If you think this check should be ignored for one of the above reasons, you can re-run this command with the --skip-logstash-proxy option.
+"""
+    else:
+        fail_msg = "Looks like you are trying to authenticate to a remote Logstash instance. This check is assuming you use IP authentication. If that is the case, then check that both IPv4 and IPv6 addresses for this host are allowed by the archive. If you authenticate via another means you may re-run this command with the --skip-logstash-proxy option."
+    http_check(logstash_url, "Logstash Endpoint (HTTPS Proxy)", headers=auth_headers, fail_msg=fail_msg)
+
+# Logstash->OpenSearch checks
+if args.host == "localhost":
+    # Load Logstash->OpenSearch Credentials
+    status_row = CLIStatusRow("Logstash->OpenSearch Credentials", quiet=args.quiet)
+    auth = None
+    try:
+        with open("/etc/perfsonar/opensearch/auth_setup.out") as auth_file:
+            for line in auth_file.readlines():
+                line_parts = line.split(" ")
+                if len(line_parts) != 2:
+                    continue
+                if line_parts[0] == "pscheduler_logstash":
+                    auth = HTTPBasicAuth(line_parts[0].strip(), line_parts[1].strip())
+                    break
+        if auth:
+            status_row.ok()
+        else:
+            fail_check("Unable to find any credentials for logstash to authenticate to OpenSearch in /etc/perfsonar/opensearch/auth_setup.out", status_row=status_row)
+    except Exception as e:
+        status_row.fail()
+        print("Unable to load the credentials that Logstash will use to authenticate to OpenSearch. It is possible something went wrong with the perfsonar-archive installation. More details in error below:")
+        print(e)
+        exit(1)
+
+    # Check logstash credentials
+    http_check(opensearch_url, "Logstash->OpenSearch Authentication", auth=auth)
+
+#exit if we don't need a data check
+if args.skip_opensearch_data:
+    exit(0)
+
+#check Opensearch to see if we have any data
+status_row = CLIStatusRow("OpenSearch Data Exists", quiet=args.quiet)
+r = None
+try:
+    r = requests.get("{}/pscheduler_*/_count".format(opensearch_url), verify=False)
+except requests.exceptions.HTTPError as err:
+    fail_check("HTTP Error - {}".format(err), status_row=status_row)
+except requests.exceptions.Timeout as err:
+    fail_check("Timeout Error - {}".format(err), status_row=status_row)
+except requests.exceptions.RequestException as err:
+    fail_check("Request Error - {}".format(err), status_row=status_row)
+except:
+    fail_check("General exception trying to contact get OpenSeach data", status_row=status_row)
+if r.json() and r.json().get("count", 0) > 0:
+    status_row.ok()
+else:
+    fail_msg  = """
+There is no data in the database. This may be expected if this is a new archive and/or you have not yet setup measurements. If you reached this point, then the basic operations of your archive seem to be functioning. A good next step would be to login to a host running measurements and do the following:
+1. Run {0}pscheduler troubleshoot{1} to make sure pScheduler is functioning
+2. Run {0}psconfig stats pscheduler{1} to check if pSConfig is configuring pscheduler tests
+3. If the measurement host is separate from this archive host, run {0}psarchive troubleshoot --host ARCHIVE_HOSTNAME{1} (replace ARCHIVE_HOSTNAME with the address of this host) from the measurement host
+""".format(CLITextStyles.BOLD, CLITextStyles.RESET)
+    fail_check(fail_msg, status_row=status_row)
