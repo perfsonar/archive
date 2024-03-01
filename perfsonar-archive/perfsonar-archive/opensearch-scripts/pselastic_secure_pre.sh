@@ -13,7 +13,8 @@ fi
 PASSWORD_DIR=/etc/perfsonar/opensearch
 PASSWORD_FILE=${PASSWORD_DIR}/auth_setup.out
 ADMIN_LOGIN_FILE=${PASSWORD_DIR}/opensearch_login
-PROXY_AUTH_JSON=/etc/perfsonar/logstash/proxy_auth.json
+PROXY_AUTH_DIR=/etc/perfsonar/logstash
+PROXY_AUTH_JSON=${PROXY_AUTH_DIR}/proxy_auth.json
 LOGSTASH_PROXY_LOGIN_FILE=${PASSWORD_DIR}/logstash_login
 LOGSTASH_PROXY_USER=perfsonar
 LOGSTASH_USER=pscheduler_logstash
@@ -167,6 +168,7 @@ fi
 PROXY_PASS=$(tr -dc A-Za-z0-9 </dev/urandom | head -c 20)
 htpasswd -bc $LOGSTASH_PROXY_LOGIN_FILE $LOGSTASH_PROXY_USER $PROXY_PASS
 LOGIN_BASE64=$(echo -n "$LOGSTASH_PROXY_USER:$PROXY_PASS" | base64 -i)
+mkdir -p $PROXY_AUTH_DIR
 echo "\"Authorization\":\"Basic $LOGIN_BASE64\"" | tee $PROXY_AUTH_JSON > /dev/null
 
 # new users: pscheduler_logstash, pscheduler_reader and pscheduler_writer
