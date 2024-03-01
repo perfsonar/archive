@@ -1,6 +1,8 @@
 %define install_base        /usr/lib/perfsonar
 %define archive_base        %{install_base}/archive
 %define scripts_base        %{archive_base}/perfsonar-scripts
+%define bin_base            %{archive_base}/bin
+%define command_base        %{bin_base}/commands
 %define setup_base          %{archive_base}/config
 %define httpd_config_base   /etc/httpd/conf.d
 %define systemd_config_base /etc/systemd/system
@@ -50,10 +52,7 @@ A package that installs the perfSONAR Archive based on Logstash and Opensearch.
 %build
 
 %install
-make PERFSONAR-ROOTPATH=%{buildroot}/%{archive_base} HTTPD-CONFIGPATH=%{buildroot}/%{httpd_config_base} SYSTEMD-CONFIGPATH=%{buildroot}/%{systemd_config_base} install
-mkdir -p %{buildroot}/%{install_base}/logstash/prometheus_pipeline/
-install -m 0644 config/01-input-local_prometheus.conf %{buildroot}/%{install_base}/logstash/prometheus_pipeline/
-rm -f %{buildroot}/%{setup_base}/01-input-local_prometheus.conf
+make PERFSONAR-ROOTPATH=%{buildroot}/%{archive_base} LOGSTASH-ROOTPATH=%{buildroot}/%{install_base}/logstash HTTPD-CONFIGPATH=%{buildroot}/%{httpd_config_base} SYSTEMD-CONFIGPATH=%{buildroot}/%{systemd_config_base} BINPATH=%{buildroot}/%{_bindir} install
 
 %clean
 rm -rf %{buildroot}
@@ -113,7 +112,10 @@ fi
 %files
 %defattr(0644,perfsonar,perfsonar,0755)
 %license LICENSE
+%attr(0755,perfsonar,perfsonar) %{bin_base}/psarchive
+%attr(0755,perfsonar,perfsonar) %{command_base}/*
 %attr(0755, perfsonar, perfsonar) %{scripts_base}/*
+%{_bindir}/psarchive
 %{setup_base}/ilm/*
 %{setup_base}/roles/*
 %{setup_base}/users/*

@@ -9,4 +9,8 @@ override_dh_auto_build:
 	
 
 override_dh_auto_install:
+
+override_dh_install:
+	make PERFSONAR-ROOTPATH=usr/lib/perfsonar/archive LOGSTASH-ROOTPATH=usr/lib/perfsonar/logstash HTTPD-CONFIGPATH=etc/apache2/conf-available SYSTEMD-CONFIGPATH=etc/systemd/system BINPATH=usr/bin install
+	dh_install
 	
