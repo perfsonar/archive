@@ -256,6 +256,7 @@ else
     echo "      allowed_actions:" | tee -a $OPENSEARCH_SECURITY_CONFIG/roles.yml > /dev/null
     echo "      - 'read'" | tee -a $OPENSEARCH_SECURITY_CONFIG/roles.yml > /dev/null
     echo "      - 'indices:admin/mappings/get'" | tee -a $OPENSEARCH_SECURITY_CONFIG/roles.yml > /dev/null
+    echo "      - 'indices:monitor/settings/get'" | tee -a $OPENSEARCH_SECURITY_CONFIG/roles.yml > /dev/null
 
     # pscheduler_writer => write-only access to the pscheduler indices
     echo "[Creating pscheduler_writer role]"
