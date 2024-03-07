@@ -15,7 +15,7 @@
 # SELinux policy type - Targeted policy is the default SELinux policy used in Red Hat Enterprise Linux.
 %global selinuxtype targeted
 # default boolean value needs to be changed to enable http proxy for opensearch and logstash
-%global selinuxbooleans httpd_can_network_connect=1
+%global selinuxbooleans httpd_can_network_connect=1  httpd_unified=1
 
 Name:			perfsonar-archive
 Version:		%{perfsonar_auto_version}
