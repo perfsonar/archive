@@ -94,23 +94,20 @@ if [ "$1" = "1" ]; then
     #set SELinux booleans to allow httpd proxy to work
     %selinux_set_booleans -s %{selinuxtype} %{selinuxbooleans}
 else
+    #run opensearch pre startup script
+    bash %{scripts_base}/pselastic_secure_pre.sh update
     #reload daemons to make sure systemd override applies
     systemctl daemon-reload
+    systemctl restart opensearch
+    #run opensearch post startup script
+    bash %{scripts_base}/pselastic_secure_pos.sh
 fi
 
 %preun
 %systemd_preun opensearch.service
 
 %postun
-if [ $1 -eq 1 ]; then
-    #upgrade
-    #run opensearch pre startup script
-    bash %{scripts_base}/pselastic_secure_pre.sh update
-    #restart
-    %systemd_postun_with_restart opensearch.service
-    #run opensearch post startup script
-    bash %{scripts_base}/pselastic_secure_pos.sh
-else
+if [ $1 -eq 0 ]; then
     #uninstall
     %selinux_unset_booleans -s %{selinuxtype} %{selinuxbooleans}
 fi
