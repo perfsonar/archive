@@ -5,13 +5,6 @@ OPENSEARCH_SECURITY_PLUGIN=/usr/share/opensearch/plugins/opensearch-security
 OPENSEARCH_SECURITY_CONFIG=${OPENSEARCH_CONFIG_DIR}/opensearch-security
 PASSWORD_FILE=/etc/perfsonar/opensearch/auth_setup.out
 
-# Update the roles to allow prometheus
-grep "prometheus" $OPENSEARCH_SECURITY_CONFIG/roles.yml > /dev/null
-if [ $? -ne 0 ]; then
-    echo "Updating roles to allow prometheus indices"
-    sed -E "s/(\s+)- 'pscheduler_?\*'/\1- 'pscheduler\*'\n\1- 'prometheus\*'/g" ${OPENSEARCH_SECURITY_CONFIG}/roles.yml
-fi
-
 # Run securityadmin to enact permission changes
 OPENSEARCH_JAVA_HOME=/usr/share/opensearch/jdk bash ${OPENSEARCH_SECURITY_PLUGIN}/tools/securityadmin.sh -cd ${OPENSEARCH_SECURITY_CONFIG} -icl -nhnv -cacert ${OPENSEARCH_CONFIG_DIR}/root-ca.pem -cert ${OPENSEARCH_CONFIG_DIR}/admin.pem -key ${OPENSEARCH_CONFIG_DIR}/admin-key.pem
 

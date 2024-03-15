@@ -25,7 +25,7 @@ case "$1" in
             chmod g+ws /etc/opensearch/
             chown -R root:opensearch /etc/opensearch/
             # run opensearch pre startup script
-            bash /usr/lib/perfsonar/archive/perfsonar-scripts/pselastic_secure_pre.sh
+            bash /usr/lib/perfsonar/archive/perfsonar-scripts/pselastic_secure_pre.sh install
             # correcting JNA tmpdir
             sed -i 's|^#OPENSEARCH_JAVA_OPTS=|OPENSEARCH_JAVA_OPTS="-Djna.tmpdir=/var/lib/opensearch/tmp"|' /etc/default/opensearch
 
@@ -54,6 +54,9 @@ case "$1" in
             fi
         else
             #upgrade
+            # pre steps
+            bash /usr/lib/perfsonar/archive/perfsonar-scripts/pselastic_secure_pre.sh update
+            # restart
             systemctl daemon-reload
             systemctl restart opensearch
             # Opensearch post startup script

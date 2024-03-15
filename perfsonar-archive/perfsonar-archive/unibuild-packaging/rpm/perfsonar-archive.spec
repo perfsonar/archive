@@ -78,7 +78,7 @@ if [ "$1" = "1" ]; then
     chmod g+ws /etc/opensearch/
     chown -R root:opensearch /etc/opensearch/
     #run opensearch pre startup script
-    bash %{scripts_base}/pselastic_secure_pre.sh
+    bash %{scripts_base}/pselastic_secure_pre.sh install
     #start opensearch
     systemctl start opensearch.service
     #restart logstash
@@ -97,15 +97,21 @@ else
     #reload daemons to make sure systemd override applies
     systemctl daemon-reload
 fi
-#run opensearch post startup script
-bash %{scripts_base}/pselastic_secure_pos.sh
 
 %preun
 %systemd_preun opensearch.service
 
 %postun
-%systemd_postun_with_restart opensearch.service
-if [ $1 -eq 0 ]; then
+if [ $1 -eq 1 ]; then
+    #upgrade
+    #run opensearch pre startup script
+    bash %{scripts_base}/pselastic_secure_pre.sh update
+    #restart
+    %systemd_postun_with_restart opensearch.service
+    #run opensearch post startup script
+    bash %{scripts_base}/pselastic_secure_pos.sh
+else
+    #uninstall
     %selinux_unset_booleans -s %{selinuxtype} %{selinuxbooleans}
 fi
 
@@ -123,6 +129,8 @@ fi
 %{setup_base}/index_template-pscheduler.json
 %{setup_base}/index_template-auditlog.json
 %{setup_base}/index_template-opendistro-ism.json
+%{setup_base}/roles_mapping.yml
+%{setup_base}/roles.yml
 %attr(0644,perfsonar,perfsonar) %{install_base}/logstash/prometheus_pipeline/01-input-local_prometheus.conf
 %attr(0644, perfsonar, perfsonar) %{httpd_config_base}/apache-opensearch.conf
 #set to config so users can modify settings if they need to

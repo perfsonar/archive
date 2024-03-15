@@ -5,6 +5,8 @@ usr/lib/perfsonar/archive/config/index_template-pscheduler.json
 usr/lib/perfsonar/archive/config/index_template-prometheus.json
 usr/lib/perfsonar/archive/config/index_template-auditlog.json
 usr/lib/perfsonar/archive/config/index_template-opendistro-ism.json
+usr/lib/perfsonar/archive/config/roles_mapping.yml
+usr/lib/perfsonar/archive/config/roles.yml
 etc/apache2/conf-available/*
 etc/systemd/system/opensearch.service.d/override.conf 
 etc/systemd/system/logstash.service.d/override.conf 
