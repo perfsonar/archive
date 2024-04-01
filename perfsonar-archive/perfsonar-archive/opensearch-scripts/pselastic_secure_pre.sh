@@ -210,7 +210,7 @@ else
     echo '  description: "pscheduler writer user"' | tee -a $OPENSEARCH_SECURITY_CONFIG/internal_users.yml > /dev/null
 
     #backup internal_users
-    cp $OPENSEARCH_SECURITY_CONFIG/internal_users.yml $OPENSEARCH_SECURITY_CONFIG/internal_users.yml.ps_backup
+    cp -f $OPENSEARCH_SECURITY_CONFIG/internal_users.yml $OPENSEARCH_SECURITY_CONFIG/internal_users.yml.ps_backup
     chmod 600 $OPENSEARCH_SECURITY_CONFIG/internal_users.yml.ps_backup
     
     # Enable anonymous user
