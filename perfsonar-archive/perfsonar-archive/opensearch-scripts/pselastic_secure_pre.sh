@@ -122,30 +122,44 @@ if [ $INSTALL_TYPE == "install" ]; then
     sed -i "s/^-Xms.*/-Xms${HALF_MEM}m/g" $JVM_FILE
     sed -i "s/^-Xmx.*/-Xmx${HALF_MEM}m/g" $JVM_FILE
 
+    # Create perfsonar user for logstash auth in proxy layer
+    if [ -f "$LOGSTASH_PROXY_LOGIN_FILE" ] ; then
+        rm "$LOGSTASH_PROXY_LOGIN_FILE"
+    fi
+    PROXY_PASS=$(tr -dc A-Za-z0-9 </dev/urandom | head -c 20)
+    htpasswd -bc $LOGSTASH_PROXY_LOGIN_FILE $LOGSTASH_PROXY_USER $PROXY_PASS
+    LOGIN_BASE64=$(echo -n "$LOGSTASH_PROXY_USER:$PROXY_PASS" | base64 -i)
+    mkdir -p $PROXY_AUTH_DIR
+    echo "\"Authorization\":\"Basic $LOGIN_BASE64\"" | tee $PROXY_AUTH_JSON > /dev/null
+fi
+
+# new users: pscheduler_logstash, pscheduler_reader and pscheduler_writer
+# 1. Create users, generate passwords and save them to file 
+echo "[Creating opensearch users]"
+grep "pscheduler" $OPENSEARCH_SECURITY_CONFIG/internal_users.yml > /dev/null
+if [ $? -eq 0 ]; then
+    echo "Users already created"
+else
+    # On update, opensearch blows away our internal users. Recreate everything if that happens.
     # Give execute permission to opensearch hash script
     chmod +x ${OPENSEARCH_SECURITY_PLUGIN}/tools/hash.sh
 
     # Generate default users random passwords, write them to tmp file and, if it works, move to permanent file
-    echo "[Generating opensearch passwords]"
-    if [ -e "$PASSWORD_FILE" ]; then
-        echo "$PASSWORD_FILE already exists, so not generating new passwords"
-    else
-        mkdir -p $PASSWORD_DIR
-        TEMPFILE=$(mktemp)
-        egrep -v '^[[:blank:]]' "${OPENSEARCH_SECURITY_CONFIG}/internal_users.yml" | egrep "\:$" | egrep -v '^\_' | sed 's\:\\g' | while read user; do
-            PASS=$(tr -dc A-Za-z0-9 </dev/urandom | head -c 20)
-            echo "$user $PASS" >> $TEMPFILE
-            HASHED_PASS=$(OPENSEARCH_JAVA_HOME=/usr/share/opensearch/jdk ${OPENSEARCH_SECURITY_PLUGIN}/tools/hash.sh -p $PASS | tail -n 1 | sed -e 's/[&\\/]/\\&/g')
-            if [[ $OS == "redhat" ]]; then
-                sed -i -e '/^'$user'\:$/,/[^hash.*$]/s/\(hash\: \).*$/\1"'$HASHED_PASS'"/' "${OPENSEARCH_SECURITY_CONFIG}/internal_users.yml"
-            elif [[ $OS == "debian" ]]; then
-                sed -i -e '/^'$user'\:$/,/[^hash.*$]/      s/\(hash\: \).*$/\1"'$HASHED_PASS'"/' "${OPENSEARCH_SECURITY_CONFIG}/internal_users.yml"
-            fi
-        done
-        mv $TEMPFILE $PASSWORD_FILE
-        chmod 600 $PASSWORD_FILE
-    fi
-
+    echo "[Generating admin password]"
+    mkdir -p $PASSWORD_DIR
+    TEMPFILE=$(mktemp)
+    egrep -v '^[[:blank:]]' "${OPENSEARCH_SECURITY_CONFIG}/internal_users.yml" | egrep "\:$" | egrep -v '^\_' | sed 's\:\\g' | while read user; do
+        PASS=$(tr -dc A-Za-z0-9 </dev/urandom | head -c 20)
+        echo "$user $PASS" >> $TEMPFILE
+        HASHED_PASS=$(OPENSEARCH_JAVA_HOME=/usr/share/opensearch/jdk ${OPENSEARCH_SECURITY_PLUGIN}/tools/hash.sh -p $PASS | tail -n 1 | sed -e 's/[&\\/]/\\&/g')
+        if [[ $OS == "redhat" ]]; then
+            sed -i -e '/^'$user'\:$/,/[^hash.*$]/s/\(hash\: \).*$/\1"'$HASHED_PASS'"/' "${OPENSEARCH_SECURITY_CONFIG}/internal_users.yml"
+        elif [[ $OS == "debian" ]]; then
+            sed -i -e '/^'$user'\:$/,/[^hash.*$]/      s/\(hash\: \).*$/\1"'$HASHED_PASS'"/' "${OPENSEARCH_SECURITY_CONFIG}/internal_users.yml"
+        fi
+    done
+    mv $TEMPFILE $PASSWORD_FILE
+    chmod 600 $PASSWORD_FILE
     # Get password for admin user
     ADMIN_PASS=$(grep -w "admin" $PASSWORD_FILE | head -n 1 | awk '{print $2}')
     if [ $? -ne 0 ]; then
@@ -162,24 +176,6 @@ if [ $INSTALL_TYPE == "install" ]; then
     echo "[DONE]"
     echo ""
 
-    # Create perfsonar user for logstash auth in proxy layer
-    if [ -f "$LOGSTASH_PROXY_LOGIN_FILE" ] ; then
-        rm "$LOGSTASH_PROXY_LOGIN_FILE"
-    fi
-    PROXY_PASS=$(tr -dc A-Za-z0-9 </dev/urandom | head -c 20)
-    htpasswd -bc $LOGSTASH_PROXY_LOGIN_FILE $LOGSTASH_PROXY_USER $PROXY_PASS
-    LOGIN_BASE64=$(echo -n "$LOGSTASH_PROXY_USER:$PROXY_PASS" | base64 -i)
-    mkdir -p $PROXY_AUTH_DIR
-    echo "\"Authorization\":\"Basic $LOGIN_BASE64\"" | tee $PROXY_AUTH_JSON > /dev/null
-fi
-
-# new users: pscheduler_logstash, pscheduler_reader and pscheduler_writer
-# 1. Create users, generate passwords and save them to file 
-echo "[Creating pscheduler users]"
-grep "pscheduler" $OPENSEARCH_SECURITY_CONFIG/internal_users.yml > /dev/null
-if [ $? -eq 0 ]; then
-    echo "User already created"
-else
     # pscheduler_logstash
     echo "[Creating $LOGSTASH_USER user]"
     PASS=$(tr -dc A-Za-z0-9 </dev/urandom | head -c 20)
@@ -213,26 +209,14 @@ else
     echo '  reserved: true' | tee -a $OPENSEARCH_SECURITY_CONFIG/internal_users.yml > /dev/null
     echo '  description: "pscheduler writer user"' | tee -a $OPENSEARCH_SECURITY_CONFIG/internal_users.yml > /dev/null
 
+    #backup internal_users
+    cp $OPENSEARCH_SECURITY_CONFIG/internal_users.yml $OPENSEARCH_SECURITY_CONFIG/internal_users.yml.ps_backup
+    chmod 600 $OPENSEARCH_SECURITY_CONFIG/internal_users.yml.ps_backup
+    
     # Enable anonymous user
     sed -i 's/\(anonymous_auth_enabled:\).*/\1 true/g' $OPENSEARCH_SECURITY_CONFIG/config.yml
-fi
-echo "[DONE]"
-echo ""
 
-# 2. Create roles
-echo "[Creating pscheduler roles]"
-cp -f /usr/lib/perfsonar/archive/config/roles.yml $OPENSEARCH_SECURITY_CONFIG/roles.yml
-echo "[DONE]"
-echo ""
-
-# 3. Map users to roles
-echo "[Mapping pscheduler users to pscheduler roles]"
-cp -f /usr/lib/perfsonar/archive/config/roles_mapping.yml $OPENSEARCH_SECURITY_CONFIG/roles_mapping.yml
-echo "[DONE]"
-echo ""
-
-# 5. Configure logstash to use pscheduler_logstash user/password
-if [ $INSTALL_TYPE == "install" ]; then
+    # Configure logstash
     echo "[Configure logstash]"
     LOGSTASH_PASS=$(grep $LOGSTASH_USER $PASSWORD_FILE | head -n 1 | awk '{print $2}')
     grep "opensearch" $LOGSTASH_SYSCONFIG > /dev/null
@@ -249,3 +233,17 @@ if [ $INSTALL_TYPE == "install" ]; then
     echo "[DONE]"
     echo ""
 fi
+echo "[DONE]"
+echo ""
+
+# 2. Create roles
+echo "[Creating pscheduler roles]"
+cp -f /usr/lib/perfsonar/archive/config/roles.yml $OPENSEARCH_SECURITY_CONFIG/roles.yml
+echo "[DONE]"
+echo ""
+
+# 3. Map users to roles
+echo "[Mapping pscheduler users to pscheduler roles]"
+cp -f /usr/lib/perfsonar/archive/config/roles_mapping.yml $OPENSEARCH_SECURITY_CONFIG/roles_mapping.yml
+echo "[DONE]"
+echo ""
