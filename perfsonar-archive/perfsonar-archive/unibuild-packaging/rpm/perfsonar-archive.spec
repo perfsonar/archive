@@ -93,6 +93,8 @@ if [ "$1" = "1" ]; then
     systemctl restart httpd
     #set SELinux booleans to allow httpd proxy to work
     %selinux_set_booleans -s %{selinuxtype} %{selinuxbooleans}
+    #run opensearch post startup script
+    bash %{scripts_base}/pselastic_secure_pos.sh
 else
     #run opensearch pre startup script
     bash %{scripts_base}/pselastic_secure_pre.sh update

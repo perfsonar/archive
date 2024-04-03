@@ -36,6 +36,9 @@ else
     exit 1
 fi
 
+#init directory
+mkdir -p $PASSWORD_DIR
+
 ## CONFIGURING TLS
 if [ $INSTALL_TYPE == "install" ]; then
     # Delete demo certificate files
@@ -146,7 +149,6 @@ else
 
     # Generate default users random passwords, write them to tmp file and, if it works, move to permanent file
     echo "[Generating admin password]"
-    mkdir -p $PASSWORD_DIR
     TEMPFILE=$(mktemp)
     egrep -v '^[[:blank:]]' "${OPENSEARCH_SECURITY_CONFIG}/internal_users.yml" | egrep "\:$" | egrep -v '^\_' | sed 's\:\\g' | while read user; do
         PASS=$(tr -dc A-Za-z0-9 </dev/urandom | head -c 20)
