@@ -39,6 +39,7 @@ Requires:       mod_ssl
 Requires:       curl
 Requires:       selinux-policy-%{selinuxtype}
 Requires(post): selinux-policy-%{selinuxtype}
+Requires(post): opensearch >= 2.1.0
 BuildRequires:  selinux-policy-devel
 BuildRequires:  git
 %{?selinux_requires}
