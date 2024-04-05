@@ -110,7 +110,3 @@ if [ $? -eq 1 ]; then
     /usr/lib/perfsonar/logstash/scripts/enable_prometheus_pipeline.py
     systemctl restart logstash
 fi 
-
-# Tighten file permissions on opensearch config files. Disables warning in logs
-find /etc/opensearch/* -type d -exec chmod 0700 {} \;
-find /etc/opensearch/* -type f -exec chmod 0600 {} \;
