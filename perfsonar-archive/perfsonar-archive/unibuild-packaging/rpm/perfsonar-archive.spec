@@ -101,6 +101,9 @@ else
     bash %{scripts_base}/pselastic_secure_pre.sh update
     #reload daemons to make sure systemd override applies
     systemctl daemon-reload
+    # make sure we cleanup any nonsense that may have happened on an opensearch update
+    systemctl reset-failed opensearch
+    # restart opensearch
     systemctl restart opensearch
     #run opensearch post startup script
     bash %{scripts_base}/pselastic_secure_pos.sh

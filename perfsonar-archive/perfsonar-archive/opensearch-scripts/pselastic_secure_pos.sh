@@ -108,5 +108,6 @@ echo ""
 grep -q prometheus_pipeline /etc/logstash/pipelines.yml
 if [ $? -eq 1 ]; then
     /usr/lib/perfsonar/logstash/scripts/enable_prometheus_pipeline.py
+    systemctl reset-failed logstash
     systemctl restart logstash
 fi 
