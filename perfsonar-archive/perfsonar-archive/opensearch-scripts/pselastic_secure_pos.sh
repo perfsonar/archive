@@ -21,6 +21,7 @@ fi
 echo "Waiting for opensearch API to start..."
 api_status=$(curl -s -o /dev/null -w "%{http_code}" -u admin:${ADMIN_PASS} -k https://localhost:9200/_cluster/health)
 i=0
+opensearch_restarts=0
 while [[ $api_status -ne 200 ]]
 do
     sleep 1
@@ -29,6 +30,18 @@ do
     if [[ $i -eq 100 ]]; then
         echo "[ERROR] API start timeout"
         exit 1
+    fi
+    #check if process failed
+    if [[ $opensearch_restarts -eq 0 ]]; then
+        opensearch_systemctl_status=$(systemctl is-active opensearch)
+        if [ "$opensearch_systemctl_status" == "failed" ]; then
+            echo "Restarting opensearch"
+            systemctl reset-failed opensearch
+            systemctl start opensearch
+            ((opensearch_restarts++))
+            sleep 10
+            echo "Restart complete"
+        fi
     fi
     api_status=$(curl -s -o /dev/null -w "%{http_code}" -u admin:${ADMIN_PASS} -k https://localhost:9200/_cluster/health)
 done
