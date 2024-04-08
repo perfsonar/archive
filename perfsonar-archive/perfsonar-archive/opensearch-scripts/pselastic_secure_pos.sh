@@ -140,4 +140,14 @@ if [ $? -eq 1 ]; then
     /usr/lib/perfsonar/logstash/scripts/enable_prometheus_pipeline.py
     systemctl reset-failed logstash
     systemctl restart logstash
+else
+    logstash_systemctl_status=$(systemctl is-active logstash)
+    #check if process failed
+    if [ "$logstash_systemctl_status" == "failed" ]; then
+        echo "Restarting logstash"
+        systemctl reset-failed logstash
+        systemctl start logstash
+        ((opensearch_restarts++))
+        echo "Restart complete"
+    fi
 fi 
