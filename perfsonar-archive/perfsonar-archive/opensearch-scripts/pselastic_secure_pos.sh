@@ -5,6 +5,36 @@ OPENSEARCH_SECURITY_PLUGIN=/usr/share/opensearch/plugins/opensearch-security
 OPENSEARCH_SECURITY_CONFIG=${OPENSEARCH_CONFIG_DIR}/opensearch-security
 PASSWORD_FILE=/etc/perfsonar/opensearch/auth_setup.out
 
+echo "Waiting for opensearch to start..."
+opensearch_systemctl_status=$(systemctl is-active opensearch)
+i=0
+opensearch_restarts=0
+while [ $opensearch_systemctl_status != "active" ]
+do
+    sleep 1
+    ((i++))
+    # Wait a maximum of 100 seconds for the opensearch to start
+    if [[ $i -eq 100 ]]; then
+        echo "[ERROR] Opensearch systemctl start timeout"
+        exit 1
+    fi
+    #check if process failed
+    if [ "$opensearch_systemctl_status" == "failed" ]; then
+        if [[ $opensearch_restarts -eq 0 ]]; then
+            echo "Restarting opensearch"
+            systemctl reset-failed opensearch
+            systemctl start opensearch
+            ((opensearch_restarts++))
+            echo "Restart complete"
+        else
+            echo "[ERROR] Opensearch in failed state even after restart attempt"
+            exit 1
+        fi
+    fi
+    opensearch_systemctl_status=$(systemctl is-active opensearch)
+done
+echo "Opensearch started!"
+
 # Run securityadmin to enact permission changes
 OPENSEARCH_JAVA_HOME=/usr/share/opensearch/jdk bash ${OPENSEARCH_SECURITY_PLUGIN}/tools/securityadmin.sh -cd ${OPENSEARCH_SECURITY_CONFIG} -icl -nhnv -cacert ${OPENSEARCH_CONFIG_DIR}/root-ca.pem -cert ${OPENSEARCH_CONFIG_DIR}/admin.pem -key ${OPENSEARCH_CONFIG_DIR}/admin-key.pem
 
@@ -21,7 +51,6 @@ fi
 echo "Waiting for opensearch API to start..."
 api_status=$(curl -s -o /dev/null -w "%{http_code}" -u admin:${ADMIN_PASS} -k https://localhost:9200/_cluster/health)
 i=0
-opensearch_restarts=0
 while [[ $api_status -ne 200 ]]
 do
     sleep 1
@@ -30,18 +59,6 @@ do
     if [[ $i -eq 100 ]]; then
         echo "[ERROR] API start timeout"
         exit 1
-    fi
-    #check if process failed
-    if [[ $opensearch_restarts -eq 0 ]]; then
-        opensearch_systemctl_status=$(systemctl is-active opensearch)
-        if [ "$opensearch_systemctl_status" == "failed" ]; then
-            echo "Restarting opensearch"
-            systemctl reset-failed opensearch
-            systemctl start opensearch
-            ((opensearch_restarts++))
-            sleep 10
-            echo "Restart complete"
-        fi
     fi
     api_status=$(curl -s -o /dev/null -w "%{http_code}" -u admin:${ADMIN_PASS} -k https://localhost:9200/_cluster/health)
 done
