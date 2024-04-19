@@ -40,7 +40,7 @@ fi
 mkdir -p $PASSWORD_DIR
 
 ## CONFIGURING TLS
-if [ $INSTALL_TYPE == "install" ]; then
+if [ "$INSTALL_TYPE" == "install" ]; then
     # Delete demo certificate files
     rm -f ${OPENSEARCH_CONFIG_DIR}/*.pem
 
