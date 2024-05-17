@@ -1,0 +1,48 @@
+#!/bin/bash
+
+PASSWORD_FILE=/etc/perfsonar/opensearch/auth_setup.out
+ADMIN_PASS=$(grep -w "admin" $PASSWORD_FILE | head -n 1 | awk '{print $2}')
+
+# Reset pscheduler policy
+echo "Remove pscheduler policy from indices"
+curl -k -u admin:${ADMIN_PASS} -H 'Content-Type: application/json' -X POST "https://localhost:9200/_plugins/_ism/remove/pscheduler*" -d '{ "policy_id": "pscheduler_default_policy" }'
+echo ""
+
+echo "Remove pscheduler policy"
+curl -k -u admin:${ADMIN_PASS} -H 'Content-Type: application/json' -X DELETE "https://localhost:9200/_plugins/_ism/policies/pscheduler_default_policy"
+echo ""
+
+echo "Creating pscheduler policy"
+curl -k -u admin:${ADMIN_PASS} -H 'Content-Type: application/json' -X PUT "https://localhost:9200/_plugins/_ism/policies/pscheduler_default_policy" -d "@/usr/lib/perfsonar/archive/config/ilm/install/pscheduler_default_policy.json"
+echo ""
+
+echo "Applying pscheduler policy to indices"
+curl -k -u admin:${ADMIN_PASS} -H 'Content-Type: application/json' -X POST "https://localhost:9200/_plugins/_ism/add/pscheduler*" -d '{ "policy_id": "pscheduler_default_policy" }'
+echo ""
+
+echo "Update index auto management settings"
+curl -k -u admin:${ADMIN_PASS} -H 'Content-Type: application/json' -X PUT "https://localhost:9200/pscheduler*/_settings" -d '{ "index.plugins.index_state_management.auto_manage": null }'
+echo ""
+
+echo ""
+
+# Reset prometheus policy
+echo "Remove prometheus policy from indices"
+curl -k -u admin:${ADMIN_PASS} -H 'Content-Type: application/json' -X POST "https://localhost:9200/_plugins/_ism/remove/prometheus*" -d '{ "policy_id": "prometheus_default_policy" }'
+echo ""
+
+echo "Remove prometheus policy"
+curl -k -u admin:${ADMIN_PASS} -H 'Content-Type: application/json' -X DELETE "https://localhost:9200/_plugins/_ism/policies/prometheus_default_policy"
+echo ""
+
+echo "Creating prometheus policy"
+curl -k -u admin:${ADMIN_PASS} -H 'Content-Type: application/json' -X PUT "https://localhost:9200/_plugins/_ism/policies/prometheus_default_policy" -d "@/usr/lib/perfsonar/archive/config/ilm/install/prometheus_default_policy.json"
+echo ""
+
+echo "Applying prometheus policy to indices"
+curl -k -u admin:${ADMIN_PASS} -H 'Content-Type: application/json' -X POST "https://localhost:9200/_plugins/_ism/add/prometheus*" -d '{ "policy_id": "prometheus_default_policy" }'
+echo ""
+
+echo "Update index auto management settings"
+curl -k -u admin:${ADMIN_PASS} -H 'Content-Type: application/json' -X PUT "https://localhost:9200/prometheus*/_settings" -d '{ "index.plugins.index_state_management.auto_manage": null }'
+echo ""
