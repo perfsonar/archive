@@ -1,56 +1,89 @@
 {
   "policy": {
-    "description": "hot warm delete",
-    "default_state": "hot",
-    "states": [
-      {
-        "name": "hot",
-        "actions": [
+      "description": "hot warm delete",
+      "schema_version": 21,
+      "error_notification": null,
+      "default_state": "hot",
+      "states": [
           {
-            "index_priority": {
+              "name": "hot",
+              "actions": [
+                  {
+                      "retry": {
+                          "count": 3,
+                          "backoff": "exponential",
+                          "delay": "1m"
+                      },
+                      "index_priority": {
+                          "priority": 100
+                      }
+                  },
+                  {
+                      "retry": {
+                          "count": 3,
+                          "backoff": "exponential",
+                          "delay": "1m"
+                      },
+                      "rollover": {
+                          "min_index_age": "7d",
+                          "copy_alias": false
+                      }
+                  }
+              ],
+              "transitions": [
+                  {
+                      "state_name": "warm",
+                      "conditions": {
+                          "min_index_age": "8d"
+                      }
+                  }
+              ]
+          },
+          {
+              "name": "warm",
+              "actions": [
+                  {
+                      "retry": {
+                          "count": 3,
+                          "backoff": "exponential",
+                          "delay": "1m"
+                      },
+                      "index_priority": {
+                          "priority": 50
+                      }
+                  }
+              ],
+              "transitions": [
+                  {
+                      "state_name": "delete",
+                      "conditions": {
+                          "min_index_age": "180d"
+                      }
+                  }
+              ]
+          },
+          {
+              "name": "delete",
+              "actions": [
+                  {
+                      "retry": {
+                          "count": 3,
+                          "backoff": "exponential",
+                          "delay": "1m"
+                      },
+                      "delete": {}
+                  }
+              ],
+              "transitions": []
+          }
+      ],
+      "ism_template": [
+          {
+              "index_patterns": [
+                  "pscheduler*"
+              ],
               "priority": 100
-            }
           }
-        ],
-        "transitions": [
-          {
-            "state_name": "warm",
-            "conditions": {
-              "min_index_age": "7d"
-            }
-          }
-        ]
-      },
-      {
-        "name": "warm",
-        "actions": [
-          {
-            "index_priority": {
-              "priority": 50
-            }
-          }
-        ],
-        "transitions": [
-          {
-            "state_name": "delete",
-            "conditions": {
-              "min_index_age": "180d"
-            }
-          }
-        ]
-      },
-      {
-        "name": "delete",
-        "actions": [
-          {
-            "delete": {}
-          }
-        ]
-      }
-    ],
-    "ism_template": {
-      "index_patterns": ["pscheduler*"],
-      "priority": 100
-    }
+      ]
   }
 }
