@@ -249,3 +249,6 @@ echo "[Mapping pscheduler users to pscheduler roles]"
 cp -f /usr/lib/perfsonar/archive/config/roles_mapping.yml $OPENSEARCH_SECURITY_CONFIG/roles_mapping.yml
 echo "[DONE]"
 echo ""
+
+#Make sure opensearch has correct permissions
+chown -R opensearch:opensearch ${OPENSEARCH_CONFIG_DIR}
