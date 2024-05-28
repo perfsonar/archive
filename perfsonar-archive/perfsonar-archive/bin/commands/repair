@@ -1,0 +1,15 @@
+#!/bin/bash
+
+echo "Preparing opensearch"
+/usr/lib/perfsonar/archive/perfsonar-scripts/pselastic_secure_pre.sh update
+echo "Restarting opensearch"
+systemctl daemon-reload
+systemctl reset-failed opensearch
+systemctl restart opensearch
+echo "Opensearch post-setup"
+/usr/lib/perfsonar/archive/perfsonar-scripts/pselastic_secure_pos.sh
+echo "Opensearch restarting logstash"
+systemctl restart logstash
+echo ""
+echo "Repair complete."
+echo " Note: It may take a few minutes for logstash to start. You can follow progress with 'tail -f /var/log/logstash/logstash-plain.log'. Once complete you can run 'psarchive troubleshoot' to confirm repair." 
