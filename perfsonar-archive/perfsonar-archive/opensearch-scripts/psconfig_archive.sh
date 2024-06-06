@@ -5,7 +5,7 @@
 #
 # Params:
 #   -n hostname: A vaid hostname of the archive server. Defaults to psconfig variable {% scheduled_by_address %}
-#   -a authtype: Authorization. Valid values are 'basic' and 'none'. Default is 'basic'.
+#   -a authtype: Authorization. Valid values are 'basic', 'none' and 'ip' ('ip' is equivalent to 'none'). Default is 'basic'.
 ####
 
 DEFAULT_ARCHIVE_HOST='{% scheduled_by_address %}'
