@@ -80,10 +80,6 @@ if [ "$1" = "1" ]; then
     chown -R root:opensearch /etc/opensearch/
     #run opensearch pre startup script
     bash %{scripts_base}/pselastic_secure_pre.sh install
-    #start opensearch
-    systemctl start opensearch.service
-    #restart logstash
-    systemctl restart logstash.service
     #run elmond configuration script
     bash %{scripts_base}/elmond_configuration.sh
     usermod -a -G opensearch perfsonar
@@ -94,20 +90,20 @@ if [ "$1" = "1" ]; then
     systemctl restart httpd
     #set SELinux booleans to allow httpd proxy to work
     %selinux_set_booleans -s %{selinuxtype} %{selinuxbooleans}
-    #run opensearch post startup script
-    bash %{scripts_base}/pselastic_secure_pos.sh
 else
     #run opensearch pre startup script
     bash %{scripts_base}/pselastic_secure_pre.sh update
     #reload daemons to make sure systemd override applies
     systemctl daemon-reload
-    # make sure we cleanup any nonsense that may have happened on an opensearch update
-    systemctl reset-failed opensearch
-    # restart opensearch
-    systemctl restart opensearch
-    #run opensearch post startup script
-    bash %{scripts_base}/pselastic_secure_pos.sh
 fi
+
+%posttrans
+# Restart opensearch or start if stopped
+systemctl restart opensearch.service
+# Restart logstash or start if stopped
+systemctl restart logstash.service
+# Run opensearch post startup script after everything is done
+bash %{scripts_base}/pselastic_secure_pos.sh
 
 %preun
 %systemd_preun opensearch.service
