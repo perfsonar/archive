@@ -1,12 +1,14 @@
 %define install_base        /usr/lib/perfsonar
 %define archive_base        %{install_base}/archive
 %define scripts_base        %{archive_base}/perfsonar-scripts
+%define bin_base            %{archive_base}/bin
+%define command_base        %{bin_base}/commands
 %define setup_base          %{archive_base}/config
 %define httpd_config_base   /etc/httpd/conf.d
 %define systemd_config_base /etc/systemd/system
 
 #Version variables set by automated scripts
-%define perfsonar_auto_version 5.0.8
+%define perfsonar_auto_version 5.1.0
 %define perfsonar_auto_relnum 1
 
 # defining macros needed by SELinux
@@ -31,11 +33,13 @@ Requires:       jq
 Requires:       perfsonar-common
 Requires:       perfsonar-logstash
 Requires:       perfsonar-elmond
+Requires:       perfsonar-host-metrics
 Requires:       httpd
 Requires:       mod_ssl
 Requires:       curl
 Requires:       selinux-policy-%{selinuxtype}
 Requires(post): selinux-policy-%{selinuxtype}
+Requires(post): opensearch >= 2.1.0
 BuildRequires:  selinux-policy-devel
 BuildRequires:  git
 %{?selinux_requires}
@@ -49,7 +53,7 @@ A package that installs the perfSONAR Archive based on Logstash and Opensearch.
 %build
 
 %install
-make PERFSONAR-ROOTPATH=%{buildroot}/%{archive_base} HTTPD-CONFIGPATH=%{buildroot}/%{httpd_config_base} SYSTEMD-CONFIGPATH=%{buildroot}/%{systemd_config_base} install
+make PERFSONAR-ROOTPATH=%{buildroot}/%{archive_base} LOGSTASH-ROOTPATH=%{buildroot}/%{install_base}/logstash HTTPD-CONFIGPATH=%{buildroot}/%{httpd_config_base} SYSTEMD-CONFIGPATH=%{buildroot}/%{systemd_config_base} BINPATH=%{buildroot}/%{_bindir} install
 
 %clean
 rm -rf %{buildroot}
@@ -75,11 +79,7 @@ if [ "$1" = "1" ]; then
     chmod g+ws /etc/opensearch/
     chown -R root:opensearch /etc/opensearch/
     #run opensearch pre startup script
-    bash %{scripts_base}/pselastic_secure_pre.sh
-    #start opensearch
-    systemctl start opensearch.service
-    #restart logstash
-    systemctl restart logstash.service
+    bash %{scripts_base}/pselastic_secure_pre.sh install
     #run elmond configuration script
     bash %{scripts_base}/elmond_configuration.sh
     usermod -a -G opensearch perfsonar
@@ -91,31 +91,46 @@ if [ "$1" = "1" ]; then
     #set SELinux booleans to allow httpd proxy to work
     %selinux_set_booleans -s %{selinuxtype} %{selinuxbooleans}
 else
+    #run opensearch pre startup script
+    bash %{scripts_base}/pselastic_secure_pre.sh update
     #reload daemons to make sure systemd override applies
     systemctl daemon-reload
 fi
-#run opensearch post startup script
+
+%posttrans
+# Restart opensearch or start if stopped
+systemctl restart opensearch.service
+# Restart logstash or start if stopped
+systemctl restart logstash.service
+# Run opensearch post startup script after everything is done
 bash %{scripts_base}/pselastic_secure_pos.sh
 
 %preun
 %systemd_preun opensearch.service
 
 %postun
-%systemd_postun_with_restart opensearch.service
 if [ $1 -eq 0 ]; then
+    #uninstall
     %selinux_unset_booleans -s %{selinuxtype} %{selinuxbooleans}
 fi
 
 %files
 %defattr(0644,perfsonar,perfsonar,0755)
 %license LICENSE
+%attr(0755,perfsonar,perfsonar) %{bin_base}/psarchive
+%attr(0755,perfsonar,perfsonar) %{command_base}/*
 %attr(0755, perfsonar, perfsonar) %{scripts_base}/*
+%{_bindir}/psarchive
 %{setup_base}/ilm/*
 %{setup_base}/roles/*
 %{setup_base}/users/*
+%{setup_base}/index_template-prometheus.json
 %{setup_base}/index_template-pscheduler.json
 %{setup_base}/index_template-auditlog.json
 %{setup_base}/index_template-opendistro-ism.json
+%{setup_base}/roles_mapping.yml
+%{setup_base}/roles.yml
+%attr(0644,perfsonar,perfsonar) %{install_base}/logstash/prometheus_pipeline/01-input-local_prometheus.conf
 %attr(0644, perfsonar, perfsonar) %{httpd_config_base}/apache-opensearch.conf
 #set to config so users can modify settings if they need to
 %config(noreplace) %attr(0644, perfsonar, perfsonar) %{systemd_config_base}/opensearch.service.d/override.conf

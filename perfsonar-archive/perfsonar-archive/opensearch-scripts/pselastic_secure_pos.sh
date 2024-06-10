@@ -5,6 +5,36 @@ OPENSEARCH_SECURITY_PLUGIN=/usr/share/opensearch/plugins/opensearch-security
 OPENSEARCH_SECURITY_CONFIG=${OPENSEARCH_CONFIG_DIR}/opensearch-security
 PASSWORD_FILE=/etc/perfsonar/opensearch/auth_setup.out
 
+echo "Waiting for opensearch to start..."
+opensearch_systemctl_status=$(systemctl is-active opensearch)
+i=0
+opensearch_restarts=0
+while [ $opensearch_systemctl_status != "active" ]
+do
+    sleep 1
+    ((i++))
+    # Wait a maximum of 100 seconds for the opensearch to start
+    if [[ $i -eq 100 ]]; then
+        echo "[ERROR] Opensearch systemctl start timeout"
+        exit 1
+    fi
+    #check if process failed
+    if [ "$opensearch_systemctl_status" == "failed" ]; then
+        if [[ $opensearch_restarts -eq 0 ]]; then
+            echo "Restarting opensearch"
+            systemctl reset-failed opensearch
+            systemctl start opensearch
+            ((opensearch_restarts++))
+            echo "Restart complete"
+        else
+            echo "[ERROR] Opensearch in failed state even after restart attempt"
+            exit 1
+        fi
+    fi
+    opensearch_systemctl_status=$(systemctl is-active opensearch)
+done
+echo "Opensearch started!"
+
 # Run securityadmin to enact permission changes
 OPENSEARCH_JAVA_HOME=/usr/share/opensearch/jdk bash ${OPENSEARCH_SECURITY_PLUGIN}/tools/securityadmin.sh -cd ${OPENSEARCH_SECURITY_CONFIG} -icl -nhnv -cacert ${OPENSEARCH_CONFIG_DIR}/root-ca.pem -cert ${OPENSEARCH_CONFIG_DIR}/admin.pem -key ${OPENSEARCH_CONFIG_DIR}/admin-key.pem
 
@@ -40,7 +70,7 @@ echo "API started!"
 # Check if the policy already exists
 policy_status=$(curl -s -o /dev/null -w "%{http_code}" -u admin:${ADMIN_PASS} -k https://localhost:9200/_plugins/_ism/policies/pscheduler_default_policy)
 if [ $policy_status -ne 200 ]; then
-    echo "[Create policy]"
+    echo "[Create pscheduler policy]"
     # Create index policy
     curl -k -u admin:${ADMIN_PASS} -H 'Content-Type: application/json' -X PUT "https://localhost:9200/_plugins/_ism/policies/pscheduler_default_policy" -d "@/usr/lib/perfsonar/archive/config/ilm/install/pscheduler_default_policy.json" 2>/dev/null
     echo -e "\n[Applying policy]"
@@ -50,8 +80,22 @@ if [ $policy_status -ne 200 ]; then
     echo ""
 fi
 
+# Configure index state management (ISM) policy for prometheus indices
+# Check if the policy already exists
+policy_status=$(curl -s -o /dev/null -w "%{http_code}" -u admin:${ADMIN_PASS} -k https://localhost:9200/_plugins/_ism/policies/prometheus_default_policy)
+if [ $policy_status -ne 200 ]; then
+    echo "[Create prometheus policy]"
+    # Create index policy
+    curl -k -u admin:${ADMIN_PASS} -H 'Content-Type: application/json' -X PUT "https://localhost:9200/_plugins/_ism/policies/prometheus_default_policy" -d "@/usr/lib/perfsonar/archive/config/ilm/install/prometheus_default_policy.json" 2>/dev/null
+    echo -e "\n[Applying policy]"
+    # Apply policy to index
+    curl -k -u admin:${ADMIN_PASS} -H 'Content-Type: application/json' -X POST "https://localhost:9200/_plugins/_ism/add/prometheus*" -d '{ "policy_id": "prometheus_default_policy" }' 2>/dev/null
+    echo -e "\n[DONE]"
+    echo ""
+fi
+
 # Configure index template for pscheduler index patterns
-echo "[Create template]"
+echo "[Create pscheduler template]"
 # Update template
 curl -k -u admin:${ADMIN_PASS} -s -H 'Content-Type: application/json' -XPUT "https://localhost:9200/_index_template/pscheduler_default_policy" -d @/usr/lib/perfsonar/archive/config/index_template-pscheduler.json
 echo ""
@@ -59,6 +103,14 @@ status=$(curl -k -u admin:${ADMIN_PASS} -s -o /dev/null -w "%{http_code}" -H "Co
 if [ $status -eq 200 ]; then
     echo "[Index pscheduler updated successfully]"
 fi
+echo -e "\n[DONE]"
+echo ""
+
+# Configure index template for prometheus index patterns
+echo "[Create prometheus template]"
+# Update template
+echo ""
+curl -k -u admin:${ADMIN_PASS} -s -H 'Content-Type: application/json' -XPUT "https://localhost:9200/_index_template/prometheus_template" -d @/usr/lib/perfsonar/archive/config/index_template-prometheus.json
 echo -e "\n[DONE]"
 echo ""
 
@@ -81,3 +133,21 @@ if [ $status -eq 200 ]; then
 fi
 echo -e "\n[DONE]"
 echo ""
+
+#Determine if we need to enable prometheus pipeline
+grep -q prometheus_pipeline /etc/logstash/pipelines.yml
+if [ $? -eq 1 ]; then
+    /usr/lib/perfsonar/logstash/scripts/enable_prometheus_pipeline.py
+    systemctl reset-failed logstash
+    systemctl restart logstash
+else
+    logstash_systemctl_status=$(systemctl is-active logstash)
+    #check if process failed
+    if [ "$logstash_systemctl_status" == "failed" ]; then
+        echo "Restarting logstash"
+        systemctl reset-failed logstash
+        systemctl start logstash
+        ((opensearch_restarts++))
+        echo "Restart complete"
+    fi
+fi 
