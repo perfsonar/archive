@@ -1,8 +1,8 @@
-perfsonar-dashboards (5.1.0~b2.8-1) perfsonar-5.1; urgency=low
+perfsonar-dashboards (5.1.0-1) perfsonar-5.1; urgency=low
 
   * New upstream version.
 
- -- perfSONAR developers <debian@perfsonar.net>  Fri, 07 Jun 2024 10:29:23 -0400
+ -- perfSONAR developers <debian@perfsonar.net>  Mon, 10 Jun 2024 10:37:31 +0200
 
 perfsonar-dashboards (5.0.8-1) perfsonar-5.0; urgency=low
 
