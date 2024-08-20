@@ -38,8 +38,6 @@ case "$1" in
             # Elmond configuration script
             bash /usr/lib/perfsonar/archive/perfsonar-scripts/elmond_configuration.sh
             usermod -a -G opensearch perfsonar
-            # Restart Elmond
-            systemctl restart elmond
 
             # Apache setup
             if [ -e /usr/share/apache2/apache2-maintscript-helper ]; then
