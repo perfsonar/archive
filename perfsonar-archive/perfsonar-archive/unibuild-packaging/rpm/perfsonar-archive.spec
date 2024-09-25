@@ -83,8 +83,6 @@ if [ "$1" = "1" ]; then
     #run elmond configuration script
     bash %{scripts_base}/elmond_configuration.sh
     usermod -a -G opensearch perfsonar
-    #restart elmond
-    systemctl restart elmond.service
     #Enable and restart apache for reverse proxy
     systemctl enable httpd
     systemctl restart httpd
