@@ -8,7 +8,7 @@
 %define systemd_config_base /etc/systemd/system
 
 #Version variables set by automated scripts
-%define perfsonar_auto_version 5.1.3
+%define perfsonar_auto_version 5.1.4
 %define perfsonar_auto_relnum 1
 
 # defining macros needed by SELinux
