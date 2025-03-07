@@ -7,6 +7,8 @@ set -e
 
 case "$1" in
     configure)
+        # check if installation or update, where version is a parameter
+        if [ -z "$2" ]; then
             #enable opensearch-dashboards service
             systemctl enable opensearch-dashboards
             #run opensearch dashboards pre startup script
@@ -15,8 +17,6 @@ case "$1" in
             systemctl start opensearch-dashboards
             #run opensearch dashboards post startup script
             bash /usr/lib/perfsonar/dashboards/dashboards-scripts/dashboards_secure_pos.sh
-            #restart opensearch
-            systemctl restart opensearch
 
             # Apache setup
             if [ -e /usr/share/apache2/apache2-maintscript-helper ]; then
@@ -27,6 +27,14 @@ case "$1" in
                 # Only doing a restart once to avoid triggering limits
                 apache2_invoke enmod proxy_http restart
             fi
+        else
+            #run opensearch dashboards pre startup script
+            bash /usr/lib/perfsonar/dashboards/dashboards-scripts/dashboards_secure_pre.sh
+            #if deb is getting upgraded, (re)start opensearch-dashboards
+            systemctl restart opensearch-dashboards
+            #run opensearch dashboards post startup script
+            bash /usr/lib/perfsonar/dashboards/dashboards-scripts/dashboards_secure_pos.sh
+        fi
     ;;
 
     abort-upgrade|abort-remove|abort-deconfigure)

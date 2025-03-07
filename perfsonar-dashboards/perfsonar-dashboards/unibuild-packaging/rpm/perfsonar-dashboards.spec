@@ -57,8 +57,12 @@ if [ "$1" = "1" ]; then
     systemctl enable httpd
     systemctl restart httpd
 elif [ $1 == 2 ];then
+    #run opensearch dashboards pre startup script
+    bash %{scripts_base}/dashboards_secure_pre.sh
     #if rpm is getting upgraded, (re)start opensearch-dashboards
     systemctl restart opensearch-dashboards.service
+    #run opensearch dashboards post startup script
+    bash %{scripts_base}/dashboards_secure_pos.sh
 fi
 
 %preun
