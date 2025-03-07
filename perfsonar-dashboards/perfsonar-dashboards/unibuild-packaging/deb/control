@@ -9,7 +9,7 @@ Homepage: http://www.perfsonar.net
 Package: perfsonar-dashboards
 Architecture: all
 Depends: ${shlibs:Depends}, ${misc:Depends}, opensearch-dashboards, apache2,
- apache2-ssl-dev, perfsonar-common
+ apache2-ssl-dev, jq, perfsonar-common
 Description: perfSONAR archive dashboards
  A package that installs and configure Opensearch Dashboards for
  perfSONAR usage and accessing the Opensearch based perfSONAR Archive.

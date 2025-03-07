@@ -22,7 +22,12 @@ done
 echo "API started!"
 
 # Pre configure opensearch dashboards's index patterns
-echo "[Add default index-pattern]"
-curl -X POST -u admin:${ADMIN_PASS} http://localhost:5601/api/saved_objects/index-pattern -H "osd-version: ${DASHBOARDS_VERSION}" -H "osd-xsrf: true" -H "content-type: application/json; charset=utf-8" -d '{"attributes":{"title":"pscheduler*","timeFieldName":"pscheduler.start_time","fields":"[]"}}' 2>/dev/null
-echo -e "\n[DONE]"
-echo ""
+# Check if the index pattern already exists
+response=$(curl -s -X GET -u admin:${ADMIN_PASS} "http://localhost:5601/api/saved_objects/_find?type=index-pattern&search_fields=title&search=pscheduler")
+total=$(echo "$response" | jq -r '.total')
+if [[ "$total" -eq 0 ]]; then
+    echo "[Add default index-pattern]"
+    curl -X POST -u admin:${ADMIN_PASS} http://localhost:5601/api/saved_objects/index-pattern -H "osd-version: ${DASHBOARDS_VERSION}" -H "osd-xsrf: true" -H "content-type: application/json; charset=utf-8" -d '{"attributes":{"title":"pscheduler*","timeFieldName":"pscheduler.start_time","fields":"[]"}}' 2>/dev/null
+    echo -e "\n[DONE]"
+    echo ""
+fi

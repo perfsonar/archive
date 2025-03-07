@@ -20,6 +20,7 @@ BuildArch:		noarch
 Requires:       opensearch-dashboards >= 2.1.0
 Requires:       httpd
 Requires:       mod_ssl
+Requires:       jq
 
 %description
 A package that installs and configure Opensearch Dashboards.
