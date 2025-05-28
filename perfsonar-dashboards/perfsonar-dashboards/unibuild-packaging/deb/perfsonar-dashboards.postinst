@@ -28,8 +28,12 @@ case "$1" in
                 apache2_invoke enmod proxy_http restart
             fi
         else
-            #upgrade
-            systemctl restart opensearch
+            #run opensearch dashboards pre startup script
+            bash /usr/lib/perfsonar/dashboards/dashboards-scripts/dashboards_secure_pre.sh
+            #if deb is getting upgraded, (re)start opensearch-dashboards
+            systemctl restart opensearch-dashboards
+            #run opensearch dashboards post startup script
+            bash /usr/lib/perfsonar/dashboards/dashboards-scripts/dashboards_secure_pos.sh
         fi
     ;;
 
