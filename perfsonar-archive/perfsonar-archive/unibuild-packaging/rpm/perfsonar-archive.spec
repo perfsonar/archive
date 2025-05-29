@@ -42,7 +42,6 @@ Requires(post): selinux-policy-%{selinuxtype}
 Requires(post): opensearch >= 2.1.0
 BuildRequires:  selinux-policy-devel
 BuildRequires:  git
-%{?selinux_requires}
 
 %description
 A package that installs the perfSONAR Archive based on Logstash and Opensearch.
