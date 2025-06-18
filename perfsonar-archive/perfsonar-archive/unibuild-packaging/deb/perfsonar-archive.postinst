@@ -35,8 +35,6 @@ case "$1" in
 
             # Opensearch post startup script
             bash /usr/lib/perfsonar/archive/perfsonar-scripts/pselastic_secure_pos.sh
-            # Elmond configuration script
-            bash /usr/lib/perfsonar/archive/perfsonar-scripts/elmond_configuration.sh
             usermod -a -G opensearch perfsonar
 
             # Apache setup

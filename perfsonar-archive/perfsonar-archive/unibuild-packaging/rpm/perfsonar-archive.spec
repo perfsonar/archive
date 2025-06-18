@@ -32,7 +32,6 @@ Requires:       openssl
 Requires:       jq
 Requires:       perfsonar-common
 Requires:       perfsonar-logstash
-Requires:       perfsonar-elmond
 Requires:       perfsonar-host-metrics
 Requires:       httpd
 Requires:       mod_ssl
@@ -80,8 +79,6 @@ if [ "$1" = "1" ]; then
     chown -R root:opensearch /etc/opensearch/
     #run opensearch pre startup script
     bash %{scripts_base}/pselastic_secure_pre.sh install
-    #run elmond configuration script
-    bash %{scripts_base}/elmond_configuration.sh
     usermod -a -G opensearch perfsonar
     #Enable and restart apache for reverse proxy
     systemctl enable httpd
