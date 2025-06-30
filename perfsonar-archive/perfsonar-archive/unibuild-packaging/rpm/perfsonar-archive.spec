@@ -8,7 +8,7 @@
 %define systemd_config_base /etc/systemd/system
 
 #Version variables set by automated scripts
-%define perfsonar_auto_version 5.2.0
+%define perfsonar_auto_version 5.2.1
 %define perfsonar_auto_relnum 1
 
 # defining macros needed by SELinux
@@ -42,7 +42,6 @@ Requires(post): selinux-policy-%{selinuxtype}
 Requires(post): opensearch >= 2.1.0
 BuildRequires:  selinux-policy-devel
 BuildRequires:  git
-%{?selinux_requires}
 
 %description
 A package that installs the perfSONAR Archive based on Logstash and Opensearch.
