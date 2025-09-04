@@ -8,7 +8,7 @@
 %define systemd_config_base /etc/systemd/system
 
 #Version variables set by automated scripts
-%define perfsonar_auto_version 5.2.1
+%define perfsonar_auto_version 5.2.2
 %define perfsonar_auto_relnum 1
 
 # defining macros needed by SELinux
@@ -58,6 +58,36 @@ make PERFSONAR-ROOTPATH=%{buildroot}/%{archive_base} LOGSTASH-ROOTPATH=%{buildro
 rm -rf %{buildroot}
 
 %post
+
+# This is a less-picky replacement for %selinux_set_booleans, which
+# doesn't consistently do the expected job.  Always run during install
+# and upgrades; it won't make changes unless necessary.
+
+if selinuxenabled
+then
+    for BOOL in %{selinuxbooleans}
+    do
+	NAME=$(echo "${BOOL}" | cut -d = -f 1)
+	NEW_STATE=$(echo "${BOOL}" | cut -d = -f 2)
+	case $NEW_STATE in
+	    0)
+		NAMED_NEW_STATE="off"
+		;;
+	    1)
+		NAMED_NEW_STATE="on"
+		;;
+	    *)
+		echo "Internal problem: invalid new state '${NEW_STATE}'"
+		exit 1
+	esac
+	CURRENT_NAMED_STATE=$(getsebool "${NAME}" | awk '{ print $3 }')
+        if [ "${CURRENT_NAMED_STATE}" != "${NAMED_NEW_STATE}" ]
+        then
+            echo setsebool -P "${NAME}" "${NEW_STATE}"
+	fi
+    done
+fi
+
 export JAVA_HOME=/usr/share/opensearch/jdk
 
 #Restart/enable opensearch and logstash
@@ -85,14 +115,14 @@ if [ "$1" = "1" ]; then
     #Enable and restart apache for reverse proxy
     systemctl enable httpd
     systemctl restart httpd
-    #set SELinux booleans to allow httpd proxy to work
-    %selinux_set_booleans -s %{selinuxtype} %{selinuxbooleans}
 else
     #run opensearch pre startup script
     bash %{scripts_base}/pselastic_secure_pre.sh update
     #reload daemons to make sure systemd override applies
     systemctl daemon-reload
 fi
+
+
 
 %posttrans
 # Restart opensearch or start if stopped
@@ -105,11 +135,6 @@ bash %{scripts_base}/pselastic_secure_pos.sh
 %preun
 %systemd_preun opensearch.service
 
-%postun
-if [ $1 -eq 0 ]; then
-    #uninstall
-    %selinux_unset_booleans -s %{selinuxtype} %{selinuxbooleans}
-fi
 
 %files
 %defattr(0644,perfsonar,perfsonar,0755)
