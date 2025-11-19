@@ -21,7 +21,7 @@ RUN ln -s /usr/share/opensearch-dashboards/config/ /etc/opensearch-dashboards &&
     chown opensearch-dashboards:opensearch-dashboards -R /etc/perfsonar
 
 # Set entrypoint script
-COPY entrypoint.sh /entrypoint.sh
+COPY docker/entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 
 ENTRYPOINT ["/entrypoint.sh"]
