@@ -40,6 +40,10 @@ if [ ! -f "$INIT_GUARD_FILE" ]; then
     ## sed -i -e "/^pscheduler_logstash:/,/^ /s/^\(  hash: \).*/\1\"$HASHED_PASS\"/" "$OPENSEARCH_USERS_CONFIG"
 
     #cp /etc/perfsonar/opensearch/auth_setup.out /usr/lib/perfsonar/archive/
+
+    # Extract pscheduler_logstash password from the main config and save to a shared folder for logstash container to read
+    mkdir -p /env
+    grep "opensearch_output_password=" /etc/sysconfig/logstash > /env/logstash.env
 fi
 
 echo "Starting OpenSearch..."
