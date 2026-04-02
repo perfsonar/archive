@@ -1,13 +1,13 @@
 #!/bin/bash
 
 echo "Preparing opensearch"
-/usr/lib/perfsonar/archive/perfsonar-scripts/pselastic_secure_pre.sh update
+/usr/lib/perfsonar/archive/perfsonar-scripts/psopensearch_secure_pre.sh update
 echo "Restarting opensearch"
 systemctl daemon-reload
 systemctl reset-failed opensearch
 systemctl restart opensearch
 echo "Opensearch post-setup"
-/usr/lib/perfsonar/archive/perfsonar-scripts/pselastic_secure_pos.sh
+/usr/lib/perfsonar/archive/perfsonar-scripts/psopensearch_secure_pos.sh
 echo "Opensearch restarting logstash"
 systemctl restart logstash
 echo ""

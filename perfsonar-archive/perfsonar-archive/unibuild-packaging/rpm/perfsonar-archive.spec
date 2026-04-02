@@ -108,7 +108,7 @@ if [ "$1" = "1" ]; then
     chmod g+ws /etc/opensearch/
     chown -R root:opensearch /etc/opensearch/
     #run opensearch pre startup script
-    bash %{scripts_base}/pselastic_secure_pre.sh install
+    bash %{scripts_base}/psopensearch_secure_pre.sh install
     #run elmond configuration script
     bash %{scripts_base}/elmond_configuration.sh
     usermod -a -G opensearch perfsonar
@@ -117,7 +117,7 @@ if [ "$1" = "1" ]; then
     systemctl restart httpd
 else
     #run opensearch pre startup script
-    bash %{scripts_base}/pselastic_secure_pre.sh update
+    bash %{scripts_base}/psopensearch_secure_pre.sh update
     #reload daemons to make sure systemd override applies
     systemctl daemon-reload
 fi
@@ -130,7 +130,7 @@ systemctl restart opensearch.service
 # Restart logstash or start if stopped
 systemctl restart logstash.service
 # Run opensearch post startup script after everything is done
-bash %{scripts_base}/pselastic_secure_pos.sh
+bash %{scripts_base}/psopensearch_secure_pos.sh
 
 %preun
 %systemd_preun opensearch.service
