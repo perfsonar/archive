@@ -94,6 +94,20 @@ if [ $policy_status -ne 200 ]; then
     echo ""
 fi
 
+# Configure index state management (ISM) policy for security auditlog indices
+# Check if the policy already exists
+policy_status=$(curl -s -o /dev/null -w "%{http_code}" -u admin:${ADMIN_PASS} -k https://localhost:9200/_plugins/_ism/policies/security_auditlog_default_policy)
+if [ $policy_status -ne 200 ]; then
+    echo "[Create security auditlog policy]"
+    # Create index policy
+    curl -k -u admin:${ADMIN_PASS} -H 'Content-Type: application/json' -X PUT "https://localhost:9200/_plugins/_ism/policies/security_auditlog_default_policy" -d "@/usr/lib/perfsonar/archive/config/ilm/install/security_auditlog_default_policy.json" 2>/dev/null
+    echo -e "\n[Applying policy]"
+    # Apply policy to index
+    curl -k -u admin:${ADMIN_PASS} -H 'Content-Type: application/json' -X POST "https://localhost:9200/_plugins/_ism/add/security-auditlog-*" -d '{ "policy_id": "security_auditlog_default_policy" }' 2>/dev/null
+    echo -e "\n[DONE]"
+    echo ""
+fi
+
 # Configure index template for pscheduler index patterns
 echo "[Create pscheduler template]"
 # Update template

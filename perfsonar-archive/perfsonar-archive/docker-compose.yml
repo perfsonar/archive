@@ -1,0 +1,27 @@
+services:  
+  opensearch-node:
+    image: ghcr.io/perfsonar/opensearch-node:5.3.0
+    restart: on-failure
+    platform: linux/amd64
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+    container_name: opensearch-node
+    environment:
+      OPENSEARCH_INITIAL_ADMIN_PASSWORD: "perfSONAR123!"
+      DISABLE_INSTALL_DEMO_CONFIG: "true"
+      cluster.name: opensearch-cluster
+      node.name: opensearch-node
+      discovery.type: single-node
+      bootstrap.memory_lock: "true"            # disables swapping
+      network.host: "0.0.0.0"                  # required for non-demo config
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+      nofile:
+        soft: 65536 # maximum number of open files for the OpenSearch user, set to at least 65536 on modern systems
+        hard: 65536
+    ports:
+      - "9200:9200"
+      - "9600:9600" # required for Performance Analyzer
