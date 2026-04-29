@@ -55,6 +55,8 @@ case "$1" in
             #upgrade
             # pre steps
             bash /usr/lib/perfsonar/archive/perfsonar-scripts/psopensearch_secure_pre.sh update
+            # correcting JNA tmpdir
+            sed -i 's|^#OPENSEARCH_JAVA_OPTS=|OPENSEARCH_JAVA_OPTS="-Djna.tmpdir=/var/lib/opensearch/tmp"|' /etc/default/opensearch
             #reload daemons to make sure systemd override applies
             systemctl daemon-reload
             # make sure we cleanup any nonsense that may have happened on an opensearch update

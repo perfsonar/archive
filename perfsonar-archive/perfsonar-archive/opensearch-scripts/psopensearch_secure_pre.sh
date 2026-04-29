@@ -96,7 +96,9 @@ if [ "$INSTALL_TYPE" == "install" ]; then
     sed -i '/^plugins.security.restapi.roles_enabled:.*/d' $OPENSEARCH_CONFIG_FILE
     sed -i '/^plugins.security.allow_unsafe_democertificates:.*/d' $OPENSEARCH_CONFIG_FILE
     sed -i '/^plugins.security.ssl.transport.enforce_hostname_verification:.*/d' $OPENSEARCH_CONFIG_FILE
+    sed -i '/^transport.ssl.enforce_hostname_verification:.*/d' $OPENSEARCH_CONFIG_FILE
     sed -i '/^discovery.type:.*/d' $OPENSEARCH_CONFIG_FILE
+    sed -i '/^node.max_local_storage_nodes:.*/d' $OPENSEARCH_CONFIG_FILE
 
     # Apply new settings
     echo -e '\n######## Start OpenSearch Security PerfSONAR Configuration ########\n' | tee -a $OPENSEARCH_CONFIG_FILE > /dev/null
@@ -113,17 +115,12 @@ if [ "$INSTALL_TYPE" == "install" ]; then
     echo 'plugins.security.audit.type: internal_opensearch' | tee -a $OPENSEARCH_CONFIG_FILE > /dev/null
     echo 'plugins.security.enable_snapshot_restore_privilege: true' | tee -a $OPENSEARCH_CONFIG_FILE > /dev/null
     echo 'plugins.security.check_snapshot_restore_write_privileges: true' | tee -a $OPENSEARCH_CONFIG_FILE > /dev/null
-    echo 'plugins.security.restapi.roles_enabled: ["all_access", "security_rest_api_access"]' | tee -a $OPENSEARCH_CONFIG_FILE > /dev/null
+    echo 'plugins.security.restapi.roles_enabled: [all_access, security_rest_api_access]' | tee -a $OPENSEARCH_CONFIG_FILE > /dev/null
     echo 'plugins.security.allow_unsafe_democertificates: false' | tee -a $OPENSEARCH_CONFIG_FILE > /dev/null
-    echo 'plugins.security.ssl.transport.enforce_hostname_verification: false' | tee -a $OPENSEARCH_CONFIG_FILE > /dev/null
+    echo 'transport.ssl.enforce_hostname_verification: false' | tee -a $OPENSEARCH_CONFIG_FILE > /dev/null
     echo 'discovery.type: single-node' | tee -a $OPENSEARCH_CONFIG_FILE > /dev/null
+    echo 'node.max_local_storage_nodes: 1' | tee -a $OPENSEARCH_CONFIG_FILE > /dev/null
     echo -e '\n######## End OpenSearch Security PerfSONAR Configuration ########' | tee -a $OPENSEARCH_CONFIG_FILE > /dev/null
-
-    ## Specify initial and maximum JVM heap sizes.
-
-    HALF_MEM=$(free --mega | awk '$1 == "Mem:" { half=int(($2/2)+0.5); print (half > 8192) ? 8192 : half }')
-    sed -i "s/^-Xms.*/-Xms${HALF_MEM}m/g" $JVM_FILE
-    sed -i "s/^-Xmx.*/-Xmx${HALF_MEM}m/g" $JVM_FILE
 
     # Create perfsonar user for logstash auth in proxy layer
     if [ -f "$LOGSTASH_PROXY_LOGIN_FILE" ] ; then
@@ -135,6 +132,34 @@ if [ "$INSTALL_TYPE" == "install" ]; then
     mkdir -p $PROXY_AUTH_DIR
     echo "\"Authorization\":\"Basic $LOGIN_BASE64\"" | tee $PROXY_AUTH_JSON > /dev/null
 fi
+
+## UPDATE BLOCK: Swap out config files dropped by the package manager
+if [ "$INSTALL_TYPE" == "update" ]; then
+    echo "[Checking for updated package configuration files]"
+    # Define package manager specific extensions
+    EXT=""
+    if [[ $OS == "redhat" ]]; then EXT=".rpmnew"; fi
+    if [[ $OS == "debian" ]]; then EXT=".dpkg-dist"; fi
+
+    # Check for newly shipped config files from OpenSearch 3.6
+    for file in $JVM_FILE /etc/default/opensearch /etc/sysconfig/opensearch; do
+        if [ -f "${file}${EXT}" ]; then
+            echo "Upgrading configuration file: Replacing $file with ${file}${EXT}"
+            mv -f "${file}${EXT}" "$file"
+        fi
+    done
+
+    # Remove old settings that may be present in the existing config file but are no longer compatible with the new version of OpenSearch
+    sed -i '/^plugins.security.ssl.transport.enforce_hostname_verification:.*/d' $OPENSEARCH_CONFIG_FILE
+    sed -i '/^transport.ssl.enforce_hostname_verification:.*/d' $OPENSEARCH_CONFIG_FILE
+    echo 'transport.ssl.enforce_hostname_verification: false' | tee -a $OPENSEARCH_CONFIG_FILE > /dev/null
+fi
+
+## Specify initial and maximum JVM heap sizes.
+
+HALF_MEM=$(free --mega | awk '$1 == "Mem:" { half=int(($2/2)+0.5); print (half > 8192) ? 8192 : half }')
+sed -i "s/^-Xms.*/-Xms${HALF_MEM}m/g" $JVM_FILE
+sed -i "s/^-Xmx.*/-Xmx${HALF_MEM}m/g" $JVM_FILE
 
 # new users: pscheduler_logstash, pscheduler_reader and pscheduler_writer
 # 1. Create users, generate passwords and save them to file 
@@ -215,9 +240,6 @@ else
     cp -f $OPENSEARCH_SECURITY_CONFIG/internal_users.yml $OPENSEARCH_SECURITY_CONFIG/internal_users.yml.ps_backup
     chmod 600 $OPENSEARCH_SECURITY_CONFIG/internal_users.yml.ps_backup
     
-    # Enable anonymous user
-    sed -i 's/\(anonymous_auth_enabled:\).*/\1 true/g' $OPENSEARCH_SECURITY_CONFIG/config.yml
-
     # Configure logstash
     echo "[Configure logstash]"
     LOGSTASH_PASS=$(grep $LOGSTASH_USER $PASSWORD_FILE | head -n 1 | awk '{print $2}')
@@ -237,6 +259,9 @@ else
 fi
 echo "[DONE]"
 echo ""
+
+# Enable anonymous user
+sed -i 's/\(anonymous_auth_enabled:\).*/\1 true/g' $OPENSEARCH_SECURITY_CONFIG/config.yml
 
 # 2. Create roles
 echo "[Creating pscheduler roles]"
