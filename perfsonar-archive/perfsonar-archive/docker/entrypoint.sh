@@ -2,8 +2,8 @@
 set -e
 
 # Define paths to perfSONAR scripts and the original OpenSearch entrypoint
-PRE_SCRIPT="/usr/lib/perfsonar/archive/perfsonar-scripts/pselastic_secure_pre.sh"
-POST_SCRIPT="/usr/lib/perfsonar/archive/perfsonar-scripts/pselastic_secure_pos.sh"
+PRE_SCRIPT="/usr/lib/perfsonar/archive/perfsonar-scripts/psopensearch_secure_pre.sh"
+POST_SCRIPT="/usr/lib/perfsonar/archive/perfsonar-scripts/psopensearch_secure_pos.sh"
 PASSWORD_HASH_TOOL="/usr/share/opensearch/plugins/opensearch-security/tools/hash.sh"
 OPENSEARCH_USERS_CONFIG="/usr/share/opensearch/config/opensearch-security/internal_users.yml"
 ORIGINAL_ENTRYPOINT="/usr/share/opensearch/opensearch-docker-entrypoint.sh"
@@ -17,7 +17,7 @@ if [ ! -f "$INIT_GUARD_FILE" ]; then
     if bash "$PRE_SCRIPT" install; then
         echo "Pre-startup script completed successfully."
     else
-        echo "Error: pselastic_secure_pre.sh failed!" >&2
+        echo "Error: psopensearch_secure_pre.sh failed!" >&2
         exit 1
     fi
 
@@ -68,7 +68,7 @@ if [ ! -f "$INIT_GUARD_FILE" ]; then
         touch "$INIT_GUARD_FILE"
         echo "Post-startup script completed successfully."
     else
-        echo "Error: pselastic_secure_pos.sh failed!" >&2
+        echo "Error: psopensearch_secure_pos.sh failed!" >&2
         exit 1
     fi
 fi
