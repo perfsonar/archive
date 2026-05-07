@@ -1,0 +1,25 @@
+#!/bin/sh
+# preinst script for perfsonar-archive
+#
+# see: dh_installdeb(1)
+
+set -e
+
+if [ "$1" = "upgrade" ] || [ "$1" = "install" ]; then
+    JVM_FILE="/etc/opensearch/jvm.options"
+    
+    if [ -f "$JVM_FILE" ]; then
+        echo "perfsonar-archive: Ensuring $JVM_FILE is compatible with OpenSearch 3.6"
+        
+        # Remove the fatal security manager flag
+        sed -i 's/^18-:-Djava\.security\.manager=allow/#18-:-Djava.security.manager=allow (Disabled by perfsonar-archive)/g' "$JVM_FILE"
+        
+        # Add required Java 21 agent (if missing)
+        if ! grep -q "javaagent:agent/opensearch-agent.jar" "$JVM_FILE"; then
+            echo "21-:-javaagent:agent/opensearch-agent.jar" >> "$JVM_FILE"
+        fi
+    fi
+fi
+
+#DEBHELPER#
+exit 0

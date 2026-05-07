@@ -27,7 +27,7 @@ URL:			http://www.perfsonar.net
 Source0:		perfsonar-archive-%{version}.tar.gz
 BuildRoot:		%{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 BuildArch:		noarch
-Requires:		opensearch >= 2.1.0
+Requires:		opensearch >= 3.6.0
 Requires:       openssl
 Requires:       jq
 Requires:       perfsonar-common
@@ -39,7 +39,7 @@ Requires:       mod_ssl
 Requires:       curl
 Requires:       selinux-policy-%{selinuxtype}
 Requires(post): selinux-policy-%{selinuxtype}
-Requires(post): opensearch >= 2.1.0
+Requires(post): opensearch >= 3.6.0
 BuildRequires:  selinux-policy-devel
 BuildRequires:  git
 
@@ -56,6 +56,22 @@ make PERFSONAR-ROOTPATH=%{buildroot}/%{archive_base} LOGSTASH-ROOTPATH=%{buildro
 
 %clean
 rm -rf %{buildroot}
+
+%pretrans -p /bin/sh
+# Update the jvm.options file before opensearch begins its upgrade process
+JVM_FILE="/etc/opensearch/jvm.options"
+
+if [ -f "$JVM_FILE" ]; then
+    echo "perfsonar-archive: Ensuring $JVM_FILE is compatible with OpenSearch 3.6"
+    
+    # Remove the fatal security manager flag
+    sed -i 's/^18-:-Djava\.security\.manager=allow/#18-:-Djava.security.manager=allow (Disabled by perfsonar-archive)/g' "$JVM_FILE"
+    
+    # Add required Java 21 agent (if missing)
+    if ! grep -q "javaagent:agent/opensearch-agent.jar" "$JVM_FILE"; then
+        echo "21-:-javaagent:agent/opensearch-agent.jar" >> "$JVM_FILE"
+    fi
+fi
 
 %post
 

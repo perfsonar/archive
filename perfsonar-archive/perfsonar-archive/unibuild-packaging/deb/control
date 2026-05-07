@@ -8,7 +8,7 @@ Homepage: http://www.perfsonar.net
 
 Package: perfsonar-archive
 Architecture: all
-Depends: ${shlibs:Depends}, ${misc:Depends}, opensearch,
+Depends: ${shlibs:Depends}, ${misc:Depends}, opensearch (>= 3.6.0),
  openjdk-11-jdk | openjdk-17-jdk,
  openssl, jq, perfsonar-logstash, perfsonar-elmond, apache2,
  apache2-ssl-dev, curl, perfsonar-common, perfsonar-host-metrics
