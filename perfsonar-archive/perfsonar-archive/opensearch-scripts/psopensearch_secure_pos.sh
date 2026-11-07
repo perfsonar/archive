@@ -48,8 +48,15 @@ elif [ -z "$ADMIN_PASS" ]; then
     exit 1
 fi
 
+# curl as admin; the password goes to curl on stdin, not on its command line
+os_curl () {
+    local pass=${ADMIN_PASS//\\/\\\\}
+    pass=${pass//\"/\\\"}
+    printf 'user = "admin:%s"\n' "$pass" | curl -K - "$@"
+}
+
 echo "Waiting for opensearch API to start..."
-api_status=$(curl -s -o /dev/null -w "%{http_code}" -u admin:${ADMIN_PASS} -k https://localhost:9200/_cluster/health)
+api_status=$(os_curl -s -o /dev/null -w "%{http_code}" -k https://localhost:9200/_cluster/health)
 i=0
 while [[ $api_status -ne 200 ]]
 do
@@ -60,7 +67,7 @@ do
         echo "[ERROR] API start timeout"
         exit 1
     fi
-    api_status=$(curl -s -o /dev/null -w "%{http_code}" -u admin:${ADMIN_PASS} -k https://localhost:9200/_cluster/health)
+    api_status=$(os_curl -s -o /dev/null -w "%{http_code}" -k https://localhost:9200/_cluster/health)
 done
 
 echo "API started!"
@@ -68,42 +75,42 @@ echo "API started!"
 
 # Configure index state management (ISM) policy for pscheduler indices
 # Check if the policy already exists
-policy_status=$(curl -s -o /dev/null -w "%{http_code}" -u admin:${ADMIN_PASS} -k https://localhost:9200/_plugins/_ism/policies/pscheduler_default_policy)
+policy_status=$(os_curl -s -o /dev/null -w "%{http_code}" -k https://localhost:9200/_plugins/_ism/policies/pscheduler_default_policy)
 if [ $policy_status -ne 200 ]; then
     echo "[Create pscheduler policy]"
     # Create index policy
-    curl -k -u admin:${ADMIN_PASS} -H 'Content-Type: application/json' -X PUT "https://localhost:9200/_plugins/_ism/policies/pscheduler_default_policy" -d "@/usr/lib/perfsonar/archive/config/ilm/install/pscheduler_default_policy.json" 2>/dev/null
+    os_curl -k -H 'Content-Type: application/json' -X PUT "https://localhost:9200/_plugins/_ism/policies/pscheduler_default_policy" -d "@/usr/lib/perfsonar/archive/config/ilm/install/pscheduler_default_policy.json" 2>/dev/null
     echo -e "\n[Applying policy]"
     # Apply policy to index
-    curl -k -u admin:${ADMIN_PASS} -H 'Content-Type: application/json' -X POST "https://localhost:9200/_plugins/_ism/add/pscheduler*" -d '{ "policy_id": "pscheduler_default_policy" }' 2>/dev/null
+    os_curl -k -H 'Content-Type: application/json' -X POST "https://localhost:9200/_plugins/_ism/add/pscheduler*" -d '{ "policy_id": "pscheduler_default_policy" }' 2>/dev/null
     echo -e "\n[DONE]"
     echo ""
 fi
 
 # Configure index state management (ISM) policy for prometheus indices
 # Check if the policy already exists
-policy_status=$(curl -s -o /dev/null -w "%{http_code}" -u admin:${ADMIN_PASS} -k https://localhost:9200/_plugins/_ism/policies/prometheus_default_policy)
+policy_status=$(os_curl -s -o /dev/null -w "%{http_code}" -k https://localhost:9200/_plugins/_ism/policies/prometheus_default_policy)
 if [ $policy_status -ne 200 ]; then
     echo "[Create prometheus policy]"
     # Create index policy
-    curl -k -u admin:${ADMIN_PASS} -H 'Content-Type: application/json' -X PUT "https://localhost:9200/_plugins/_ism/policies/prometheus_default_policy" -d "@/usr/lib/perfsonar/archive/config/ilm/install/prometheus_default_policy.json" 2>/dev/null
+    os_curl -k -H 'Content-Type: application/json' -X PUT "https://localhost:9200/_plugins/_ism/policies/prometheus_default_policy" -d "@/usr/lib/perfsonar/archive/config/ilm/install/prometheus_default_policy.json" 2>/dev/null
     echo -e "\n[Applying policy]"
     # Apply policy to index
-    curl -k -u admin:${ADMIN_PASS} -H 'Content-Type: application/json' -X POST "https://localhost:9200/_plugins/_ism/add/prometheus*" -d '{ "policy_id": "prometheus_default_policy" }' 2>/dev/null
+    os_curl -k -H 'Content-Type: application/json' -X POST "https://localhost:9200/_plugins/_ism/add/prometheus*" -d '{ "policy_id": "prometheus_default_policy" }' 2>/dev/null
     echo -e "\n[DONE]"
     echo ""
 fi
 
 # Configure index state management (ISM) policy for security auditlog indices
 # Check if the policy already exists
-policy_status=$(curl -s -o /dev/null -w "%{http_code}" -u admin:${ADMIN_PASS} -k https://localhost:9200/_plugins/_ism/policies/security_auditlog_default_policy)
+policy_status=$(os_curl -s -o /dev/null -w "%{http_code}" -k https://localhost:9200/_plugins/_ism/policies/security_auditlog_default_policy)
 if [ $policy_status -ne 200 ]; then
     echo "[Create security auditlog policy]"
     # Create index policy
-    curl -k -u admin:${ADMIN_PASS} -H 'Content-Type: application/json' -X PUT "https://localhost:9200/_plugins/_ism/policies/security_auditlog_default_policy" -d "@/usr/lib/perfsonar/archive/config/ilm/install/security_auditlog_default_policy.json" 2>/dev/null
+    os_curl -k -H 'Content-Type: application/json' -X PUT "https://localhost:9200/_plugins/_ism/policies/security_auditlog_default_policy" -d "@/usr/lib/perfsonar/archive/config/ilm/install/security_auditlog_default_policy.json" 2>/dev/null
     echo -e "\n[Applying policy]"
     # Apply policy to index
-    curl -k -u admin:${ADMIN_PASS} -H 'Content-Type: application/json' -X POST "https://localhost:9200/_plugins/_ism/add/security-auditlog-*" -d '{ "policy_id": "security_auditlog_default_policy" }' 2>/dev/null
+    os_curl -k -H 'Content-Type: application/json' -X POST "https://localhost:9200/_plugins/_ism/add/security-auditlog-*" -d '{ "policy_id": "security_auditlog_default_policy" }' 2>/dev/null
     echo -e "\n[DONE]"
     echo ""
 fi
@@ -111,9 +118,9 @@ fi
 # Configure index template for pscheduler index patterns
 echo "[Create pscheduler template]"
 # Update template
-curl -k -u admin:${ADMIN_PASS} -s -H 'Content-Type: application/json' -XPUT "https://localhost:9200/_index_template/pscheduler_default_policy" -d @/usr/lib/perfsonar/archive/config/index_template-pscheduler.json
+os_curl -k -s -H 'Content-Type: application/json' -XPUT "https://localhost:9200/_index_template/pscheduler_default_policy" -d @/usr/lib/perfsonar/archive/config/index_template-pscheduler.json
 echo ""
-status=$(curl -k -u admin:${ADMIN_PASS} -s -o /dev/null -w "%{http_code}" -H "Content-Type: application/json" -XPUT "https://localhost:9200/pscheduler*/_settings" -d '{"index" : {"number_of_replicas" : 0}}')
+status=$(os_curl -k -s -o /dev/null -w "%{http_code}" -H "Content-Type: application/json" -XPUT "https://localhost:9200/pscheduler*/_settings" -d '{"index" : {"number_of_replicas" : 0}}')
 if [ $status -eq 200 ]; then
     echo "[Index pscheduler updated successfully]"
 fi
@@ -124,24 +131,24 @@ echo ""
 echo "[Create prometheus template]"
 # Update template
 echo ""
-curl -k -u admin:${ADMIN_PASS} -s -H 'Content-Type: application/json' -XPUT "https://localhost:9200/_index_template/prometheus_template" -d @/usr/lib/perfsonar/archive/config/index_template-prometheus.json
+os_curl -k -s -H 'Content-Type: application/json' -XPUT "https://localhost:9200/_index_template/prometheus_template" -d @/usr/lib/perfsonar/archive/config/index_template-prometheus.json
 echo -e "\n[DONE]"
 echo ""
 
 # Disabling opensearch internal indexes replicas
 echo "[Update internal indexes]"
 # Configure index template for security-auditlog index pattern
-curl -k -u admin:${ADMIN_PASS} -s -H 'Content-Type: application/json' -XPUT "https://localhost:9200/_index_template/auditlog" -d @/usr/lib/perfsonar/archive/config/index_template-auditlog.json
+os_curl -k -s -H 'Content-Type: application/json' -XPUT "https://localhost:9200/_index_template/auditlog" -d @/usr/lib/perfsonar/archive/config/index_template-auditlog.json
 echo ""
-status=$(curl -k -u admin:${ADMIN_PASS} -s -o /dev/null -w "%{http_code}" -H "Content-Type: application/json" -XPUT "https://localhost:9200/security-auditlog*/_settings" -d '{"index" : {"number_of_replicas" : 0}}')
+status=$(os_curl -k -s -o /dev/null -w "%{http_code}" -H "Content-Type: application/json" -XPUT "https://localhost:9200/security-auditlog*/_settings" -d '{"index" : {"number_of_replicas" : 0}}')
 if [ $status -eq 200 ]; then
     echo "[Index security-auditlog updated successfully]"
 fi
 
 # Configure index template for opendistro-ism index pattern
-curl -k -u admin:${ADMIN_PASS} -s -H 'Content-Type: application/json' -XPUT "https://localhost:9200/_index_template/opendistro_ism" -d @/usr/lib/perfsonar/archive/config/index_template-opendistro-ism.json
+os_curl -k -s -H 'Content-Type: application/json' -XPUT "https://localhost:9200/_index_template/opendistro_ism" -d @/usr/lib/perfsonar/archive/config/index_template-opendistro-ism.json
 echo ""
-status=$(curl -k -u admin:${ADMIN_PASS} -s -o /dev/null -w "%{http_code}" -H "Content-Type: application/json" -XPUT "https://localhost:9200/.opendistro-ism-managed-index-history*/_settings" -d '{"index" : {"number_of_replicas" : 0}}')
+status=$(os_curl -k -s -o /dev/null -w "%{http_code}" -H "Content-Type: application/json" -XPUT "https://localhost:9200/.opendistro-ism-managed-index-history*/_settings" -d '{"index" : {"number_of_replicas" : 0}}')
 if [ $status -eq 200 ]; then
     echo "[Index opendistro-ism-managed-index-history updated successfully]"
 fi
