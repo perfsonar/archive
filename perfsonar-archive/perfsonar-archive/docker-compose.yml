@@ -9,11 +9,11 @@ services:
     container_name: opensearch-node
     environment:
       OPENSEARCH_INITIAL_ADMIN_PASSWORD: "perfSONAR123!"
-      DISABLE_INSTALL_DEMO_CONFIG: "true"
+      DISABLE_INSTALL_DEMO_CONFIG: true
       cluster.name: opensearch-cluster
       node.name: opensearch-node
       discovery.type: single-node
-      bootstrap.memory_lock: "true"            # disables swapping
+      bootstrap.memory_lock: true              # disables swapping
       network.host: "0.0.0.0"                  # required for non-demo config
     ulimits:
       memlock:

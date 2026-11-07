@@ -21,26 +21,6 @@ if [ ! -f "$INIT_GUARD_FILE" ]; then
         exit 1
     fi
 
-    ## How to manage the password file in helm chart? Secrets?
-    ## admin password need to be available for dashboard service
-    ## pscheduler_logstash password need to be available for logstash service
-    ##
-    ## Possible solution:
-    ## - create a k8s secret with the passwords
-    ## - mount the secret as a file in the perfsonar-archive pod
-    ## - read the passwords from the mounted file here and update the password file, and opensearch config
-    ##
-    ## Steps to update password file and opensearch config:
-    ##
-    ## sed -i "s/^admin .*/admin $NEW_PASS/" /etc/perfsonar/opensearch/auth_setup.out
-    ## sed -i "s/^pscheduler_logstash .*/pscheduler_logstash $NEW_PASS/" /etc/perfsonar/opensearch/auth_setup.out
-    ##
-    ## HASHED_PASS=$(OPENSEARCH_JAVA_HOME=/usr/share/opensearch/jdk ${PASSWORD_HASH_TOOL} -p $NEW_PASS)
-    ## sed -i -e "/^admin:/,/^ /s/^\(  hash: \).*/\1\"$HASHED_PASS\"/" "$OPENSEARCH_USERS_CONFIG"
-    ## sed -i -e "/^pscheduler_logstash:/,/^ /s/^\(  hash: \).*/\1\"$HASHED_PASS\"/" "$OPENSEARCH_USERS_CONFIG"
-
-    #cp /etc/perfsonar/opensearch/auth_setup.out /usr/lib/perfsonar/archive/
-
     # Extract pscheduler_logstash password from the main config and save to a shared folder for logstash container to read
     mkdir -p /env
     grep "opensearch_output_password=" /etc/sysconfig/logstash > /env/logstash.env

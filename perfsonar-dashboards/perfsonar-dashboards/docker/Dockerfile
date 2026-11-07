@@ -1,4 +1,4 @@
-ARG OPENSEARCH_VERSION=2.19.4
+ARG OPENSEARCH_VERSION=3.6.0
 FROM opensearchproject/opensearch-dashboards:${OPENSEARCH_VERSION}
 
 USER root
